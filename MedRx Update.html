@@ -1,0 +1,1852 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MedRxPro - Advanced EMR & Prescription Builder</title>
+    
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#2563eb">
+    <link rel="apple-touch-icon" href="icon-192.png">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;600&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <style>
+    body {
+        background: linear-gradient(135deg, #f0f4f8 0%, #e2e8f0 100%);
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        padding-bottom: 70px;
+    }
+    .glass-card {
+        background: rgba(255, 255, 255, 0.85);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.5);
+        box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.05);
+    }
+    .theme-classic-blue { border-top: 8px solid #1e3a8a; }
+    .theme-teal-premium { border-top: 8px solid #0f766e; }
+    .theme-minimalist { border-top: 8px solid #334155; }
+    
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+    /* Voice typing animation */
+    .recording { animation: pulse-red 1.5s infinite; color: #ef4444; }
+    @keyframes pulse-red { 0% { transform: scale(1); } 50% { transform: scale(1.2); } 100% { transform: scale(1); } }
+
+    /* Custom Toast */
+    .toast-enter { transform: translateY(100%); opacity: 0; }
+    .toast-leave { transform: translateY(0); opacity: 1; }
+
+    /* ==========================================
+       Prescription Pad Fonts & Fixes 
+       ========================================== */
+
+    /* Universal selector (*) বাদ দিয়ে শুধুমাত্র নির্দিষ্ট টেক্সট ট্যাগগুলোতে ফন্ট দেওয়া হলো */
+    #prescription-pad, 
+    #prescription-pad h1, 
+    #prescription-pad h2, 
+    #prescription-pad h3, 
+    #prescription-pad h4, 
+    #prescription-pad p, 
+    #prescription-pad span, 
+    #prescription-pad div, 
+    #prescription-pad ul, 
+    #prescription-pad ol, 
+    #prescription-pad li, 
+    #prescription-pad strong,
+    #prescription-pad button {
+        font-family: 'Hind Siliguri', sans-serif !important;
+        text-rendering: optimizeLegibility !important;
+        -webkit-font-smoothing: antialiased !important;
+    }
+
+    /* FontAwesome আইকনগুলোর ::before pseudo-element কে ফোর্স করে অরিজিনাল ফন্ট দেওয়া হলো */
+    #prescription-pad i, 
+    #prescription-pad i::before, 
+    #prescription-pad i::after {
+        font-family: "Font Awesome 6 Free" !important;
+        font-weight: 900 !important;
+    }
+    
+    #prescription-pad i.fa-brands,
+    #prescription-pad i.fa-brands::before {
+        font-family: "Font Awesome 6 Brands" !important;
+        font-weight: 400 !important;
+    }
+
+   /* ==========================================
+       Print Media (Native Browser Print Setup)
+       ========================================== */
+    @media print {
+        /* ১. অপ্রয়োজনীয় সব কিছু হাইড */
+        header, 
+        #edit-section, 
+        #dashboard-section, 
+        .lg\:hidden, 
+        #toast-container,
+        #preview-section > div:first-child { 
+            display: none !important; 
+        }
+
+        /* ২. গ্রিড এবং ম্যাক্স-উইডথ রিসেট করা (এটিই সংকুচিত হওয়ার মূল কারণ ছিল) */
+        html, body {
+            background: white !important;
+            width: 100% !important;
+            margin: 0 !important;
+            padding: 0 !important;
+        }
+
+        main {
+            display: block !important; /* গ্রিড লেআউট বাতিল */
+            max-width: none !important; /* Tailwind এর max-w-6xl বাতিল */
+            width: 100% !important;
+            margin: 0 !important;
+            padding: 0 !important;
+        }
+
+        #preview-section {
+            display: block !important;
+            width: 100% !important;
+            margin: 0 !important;
+            padding: 0 !important;
+        }
+
+        /* ৩. প্রেসক্রিপশন প্যাডকে পুরো A4 পেজ জুড়ে সেট করা */
+        #prescription-pad {
+            width: 100% !important;
+            max-width: 100% !important;
+            min-height: 297mm !important;
+            box-shadow: none !important;
+            border: none !important;
+            margin: 0 !important;
+            padding: 15mm 10mm !important; /* প্রিন্টে সুন্দর দেখানোর জন্য প্যাডিং */
+        }
+
+        /* ৪. কালার এবং ব্যাকগ্রাউন্ড ঠিক রাখা */
+        * {
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+        }
+
+        /* ৫. পেজ সেটআপ (যাতে ডিফল্ট হেডার/ফুটার না আসে) */
+        @page {
+            size: A4 portrait;
+            margin: 0mm; 
+        }
+    }
+	
+</style>
+
+</head>
+
+<body class="text-slate-800">
+
+    <header class="sticky top-0 z-50 bg-blue-600 text-white px-4 py-3 shadow-md flex justify-between items-center">
+        <div class="flex items-center gap-2">
+            <i class="fa-solid fa-file-prescription text-2xl animate-pulse"></i>
+            <span class="font-bold text-lg tracking-wide">MedRxPro</span>
+        </div>
+        <div class="flex gap-2">
+            <button onclick="switchSection('edit-section')" class="p-2 hover:bg-blue-700 rounded-lg transition" title="Edit"><i class="fa-solid fa-pen-to-square"></i></button>
+            <button onclick="switchSection('preview-section')" class="p-2 hover:bg-blue-700 rounded-lg transition" title="Live Pad"><i class="fa-solid fa-eye"></i></button>
+            <button onclick="switchSection('dashboard-section')" class="p-2 hover:bg-blue-700 rounded-lg transition" title="Dashboard"><i class="fa-solid fa-chart-pie"></i></button>
+        </div>
+    </header>
+
+    <main class="max-w-6xl mx-auto p-4 grid grid-cols-1 lg:grid-cols-12 gap-6 relative">
+        
+        <section id="edit-section" class="lg:col-span-5 relative">
+            
+            <div class="flex bg-white rounded-xl shadow-sm border border-slate-200 mb-4 overflow-hidden text-xs md:text-sm font-bold sticky top-[68px] z-40">
+                <button onclick="switchTab('tab-rx')" id="btn-tab-rx" class="flex-1 py-3 text-blue-600 bg-blue-50 border-b-2 border-blue-600 transition">🩺 Prescribe</button>
+                <button onclick="switchTab('tab-tools')" id="btn-tab-tools" class="flex-1 py-3 text-slate-500 hover:bg-slate-50 transition">🧮 Tools</button>
+                <button onclick="switchTab('tab-history')" id="btn-tab-history" class="flex-1 py-3 text-slate-500 hover:bg-slate-50 transition">🗂️ Records</button>
+                <button onclick="switchTab('tab-settings')" id="btn-tab-settings" class="flex-1 py-3 text-slate-500 hover:bg-slate-50 transition">⚙️ Settings</button>
+            </div>
+
+            <div id="tab-rx" class="space-y-6 block">
+                <div class="glass-card p-5 rounded-2xl">
+                    <h3 class="text-md font-bold text-blue-900 mb-3 flex items-center gap-2">
+                        <i class="fa-solid fa-hospital-user"></i> রোগীর তথ্য
+                    </h3>
+                    <div class="grid grid-cols-12 gap-2">
+                        <input type="text" id="p-name" placeholder="রোগীর নাম" oninput="updatePrescription()" class="col-span-12 md:col-span-5 p-2 rounded-xl border border-slate-300 text-sm">
+                        <input type="number" id="p-age" placeholder="বয়স" oninput="updatePrescription()" class="col-span-4 md:col-span-3 p-2 rounded-xl border border-slate-300 text-sm">
+                        <input type="number" id="p-weight" placeholder="ওজন(kg)" oninput="updatePrescription()" class="col-span-4 md:col-span-2 p-2 rounded-xl border border-slate-300 text-sm">
+                        <select id="p-gender" onchange="updatePrescription()" class="col-span-4 md:col-span-2 p-2 rounded-xl border border-slate-300 text-sm bg-white">
+                            <option value="Male">M</option>
+                            <option value="Female">F</option>
+                            <option value="Others">O</option>
+                        </select>
+                        <input type="text" id="p-phone" placeholder="মোবাইল নম্বর (রেকর্ড সেভ করার জন্য)" oninput="updatePrescription()" class="col-span-12 p-2 rounded-xl border border-slate-300 text-sm mt-1">
+                    </div>
+                </div>
+
+                <div class="glass-card p-5 rounded-2xl bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-100">
+                    <h3 class="text-md font-bold text-indigo-900 mb-3 flex items-center gap-2">
+                        <i class="fa-solid fa-bolt text-yellow-500"></i> স্মার্ট ডিজিজ টেমপ্লেট
+                    </h3>
+                    <div class="flex flex-wrap gap-2 max-h-48 overflow-y-auto p-1">
+					
+            <button onclick="applyTemplate('viral_fever')" class="px-3 py-1.5 bg-white border border-indigo-200 text-indigo-700 rounded-lg text-xs font-bold hover:bg-indigo-600 hover:text-white transition shadow-sm">Viral Fever</button>
+			<button onclick="applyTemplate('dengue_fever')" class="px-3 py-1.5 bg-white border border-indigo-200 text-indigo-700 rounded-lg text-xs font-bold hover:bg-indigo-600 hover:text-white transition shadow-sm">Dengue Fever</button>
+			<button onclick="applyTemplate('typhoid_fever')" class="px-3 py-1.5 bg-white border border-indigo-200 text-indigo-700 rounded-lg text-xs font-bold hover:bg-indigo-600 hover:text-white transition shadow-sm">Typhoid</button>
+			<button onclick="applyTemplate('anemia')" class="px-3 py-1.5 bg-white border border-indigo-200 text-indigo-700 rounded-lg text-xs font-bold hover:bg-indigo-600 hover:text-white transition shadow-sm">Anemia / Weakness</button>
+
+			<button onclick="applyTemplate('gastritis')" class="px-3 py-1.5 bg-white border border-indigo-200 text-indigo-700 rounded-lg text-xs font-bold hover:bg-indigo-600 hover:text-white transition shadow-sm">Gastritis / GERD</button>
+			<button onclick="applyTemplate('peptic_ulcer')" class="px-3 py-1.5 bg-white border border-indigo-200 text-indigo-700 rounded-lg text-xs font-bold hover:bg-indigo-600 hover:text-white transition shadow-sm">Peptic Ulcer</button>
+			<button onclick="applyTemplate('diarrhea')" class="px-3 py-1.5 bg-white border border-indigo-200 text-indigo-700 rounded-lg text-xs font-bold hover:bg-indigo-600 hover:text-white transition shadow-sm">Diarrhea</button>
+			<button onclick="applyTemplate('amoebic_dysentery')" class="px-3 py-1.5 bg-white border border-indigo-200 text-indigo-700 rounded-lg text-xs font-bold hover:bg-indigo-600 hover:text-white transition shadow-sm">Amoebiasis</button>
+			<button onclick="applyTemplate('vomiting')" class="px-3 py-1.5 bg-white border border-indigo-200 text-indigo-700 rounded-lg text-xs font-bold hover:bg-indigo-600 hover:text-white transition shadow-sm">Vomiting / Food Poisoning</button>
+			<button onclick="applyTemplate('constipation')" class="px-3 py-1.5 bg-white border border-indigo-200 text-indigo-700 rounded-lg text-xs font-bold hover:bg-indigo-600 hover:text-white transition shadow-sm">Constipation</button>
+			<button onclick="applyTemplate('hemorrhoids')" class="px-3 py-1.5 bg-white border border-indigo-200 text-indigo-700 rounded-lg text-xs font-bold hover:bg-indigo-600 hover:text-white transition shadow-sm">Hemorrhoids (Piles)</button>
+			<button onclick="applyTemplate('worm_infestation')" class="px-3 py-1.5 bg-white border border-indigo-200 text-indigo-700 rounded-lg text-xs font-bold hover:bg-indigo-600 hover:text-white transition shadow-sm">Worm Infection</button>
+
+			<button onclick="applyTemplate('common_cold')" class="px-3 py-1.5 bg-white border border-indigo-200 text-indigo-700 rounded-lg text-xs font-bold hover:bg-indigo-600 hover:text-white transition shadow-sm">Common Cold / Flu</button>
+			<button onclick="applyTemplate('acute_tonsillitis')" class="px-3 py-1.5 bg-white border border-indigo-200 text-indigo-700 rounded-lg text-xs font-bold hover:bg-indigo-600 hover:text-white transition shadow-sm">Tonsillitis</button>
+			<button onclick="applyTemplate('acute_bronchitis')" class="px-3 py-1.5 bg-white border border-indigo-200 text-indigo-700 rounded-lg text-xs font-bold hover:bg-indigo-600 hover:text-white transition shadow-sm">Bronchitis / Cough</button>
+			<button onclick="applyTemplate('asthma_copd')" class="px-3 py-1.5 bg-white border border-indigo-200 text-indigo-700 rounded-lg text-xs font-bold hover:bg-indigo-600 hover:text-white transition shadow-sm">Asthma / COPD</button>
+			<button onclick="applyTemplate('otitis_media')" class="px-3 py-1.5 bg-white border border-indigo-200 text-indigo-700 rounded-lg text-xs font-bold hover:bg-indigo-600 hover:text-white transition shadow-sm">Ear Pain (OM)</button>
+
+			<button onclick="applyTemplate('migraine')" class="px-3 py-1.5 bg-white border border-indigo-200 text-indigo-700 rounded-lg text-xs font-bold hover:bg-indigo-600 hover:text-white transition shadow-sm">Migraine / Headache</button>
+			<button onclick="applyTemplate('low_back_pain')" class="px-3 py-1.5 bg-white border border-indigo-200 text-indigo-700 rounded-lg text-xs font-bold hover:bg-indigo-600 hover:text-white transition shadow-sm">Low Back Pain</button>
+			<button onclick="applyTemplate('osteoarthritis')" class="px-3 py-1.5 bg-white border border-indigo-200 text-indigo-700 rounded-lg text-xs font-bold hover:bg-indigo-600 hover:text-white transition shadow-sm">Osteoarthritis</button>
+			<button onclick="applyTemplate('vertigo')" class="px-3 py-1.5 bg-white border border-indigo-200 text-indigo-700 rounded-lg text-xs font-bold hover:bg-indigo-600 hover:text-white transition shadow-sm">Vertigo</button>
+			<button onclick="applyTemplate('toothache')" class="px-3 py-1.5 bg-white border border-indigo-200 text-indigo-700 rounded-lg text-xs font-bold hover:bg-indigo-600 hover:text-white transition shadow-sm">Toothache</button>
+
+			<button onclick="applyTemplate('urticaria')" class="px-3 py-1.5 bg-white border border-indigo-200 text-indigo-700 rounded-lg text-xs font-bold hover:bg-indigo-600 hover:text-white transition shadow-sm">Urticaria / Allergy</button>
+			<button onclick="applyTemplate('scabies')" class="px-3 py-1.5 bg-white border border-indigo-200 text-indigo-700 rounded-lg text-xs font-bold hover:bg-indigo-600 hover:text-white transition shadow-sm">Scabies</button>
+			<button onclick="applyTemplate('fungal_infection')" class="px-3 py-1.5 bg-white border border-indigo-200 text-indigo-700 rounded-lg text-xs font-bold hover:bg-indigo-600 hover:text-white transition shadow-sm">Fungal Infection</button>
+			<button onclick="applyTemplate('acne_vulgaris')" class="px-3 py-1.5 bg-white border border-indigo-200 text-indigo-700 rounded-lg text-xs font-bold hover:bg-indigo-600 hover:text-white transition shadow-sm">Acne (Pimples)</button>
+			<button onclick="applyTemplate('minor_wound')" class="px-3 py-1.5 bg-white border border-indigo-200 text-indigo-700 rounded-lg text-xs font-bold hover:bg-indigo-600 hover:text-white transition shadow-sm">Minor Cut / Wound</button>
+
+			<button onclick="applyTemplate('uti')" class="px-3 py-1.5 bg-white border border-indigo-200 text-indigo-700 rounded-lg text-xs font-bold hover:bg-indigo-600 hover:text-white transition shadow-sm">UTI</button>
+			<button onclick="applyTemplate('dysmenorrhea')" class="px-3 py-1.5 bg-white border border-indigo-200 text-indigo-700 rounded-lg text-xs font-bold hover:bg-indigo-600 hover:text-white transition shadow-sm">Period Pain</button>
+			<button onclick="applyTemplate('conjunctivitis')" class="px-3 py-1.5 bg-white border border-indigo-200 text-indigo-700 rounded-lg text-xs font-bold hover:bg-indigo-600 hover:text-white transition shadow-sm">Red Eye</button>
+			<button onclick="applyTemplate('hypertension')" class="px-3 py-1.5 bg-white border border-indigo-200 text-indigo-700 rounded-lg text-xs font-bold hover:bg-indigo-600 hover:text-white transition shadow-sm">Hypertension</button>
+			<button onclick="applyTemplate('insomnia')" class="px-3 py-1.5 bg-white border border-indigo-200 text-indigo-700 rounded-lg text-xs font-bold hover:bg-indigo-600 hover:text-white transition shadow-sm">Insomnia / Anxiety</button>
+		</div>
+					</div>
+
+                <div class="glass-card p-5 rounded-2xl">
+                    <h3 class="text-md font-bold text-teal-900 mb-2 flex items-center gap-2">
+                        <i class="fa-solid fa-microscope"></i> ইনভেস্টিগেশন (ল্যাব টেস্ট)
+                    </h3>
+                    <div class="flex gap-2">
+                        <input type="text" id="inv-input" list="inv-list" placeholder="CBC, USG, ECG..." class="w-full p-3 rounded-xl border border-slate-300 text-sm focus:ring-2 focus:ring-teal-500 outline-none">
+                        <datalist id="inv-list">
+					<option value="CBC with ESR">
+					<option value="Blood Grouping & Rh Factor">
+					<option value="Bleeding Time (BT) & Clotting Time (CT)">
+					<option value="Prothrombin Time (PT)">
+					<option value="APTT">
+					
+					<option value="Fasting Blood Sugar (FBS)">
+					<option value="Random Blood Sugar (RBS)">
+					<option value="Blood Glucose 2 hrs ABF">
+					<option value="HbA1c">
+					<option value="Lipid Profile">
+					<option value="Serum Uric Acid">
+					<option value="Serum Calcium">
+					<option value="Serum Electrolytes (Na, K, Cl)">
+					
+					<option value="Serum Creatinine">
+					<option value="Blood Urea">
+					
+					<option value="SGPT / ALT">
+					<option value="SGOT / AST">
+					<option value="Serum Bilirubin">
+					<option value="Serum Alkaline Phosphatase">
+					<option value="Serum Albumin">
+					<option value="Serum Total Protein">
+					
+					<option value="TSH">
+					<option value="Free T3">
+					<option value="Free T4">
+					<option value="Serum Prolactin">
+					<option value="Testosterone">
+					
+					<option value="Vitamin D3 (25-OH Cholecalciferol)">
+					<option value="Vitamin B12">
+					<option value="Serum Iron">
+					<option value="Serum Ferritin">
+					<option value="TIBC">
+					
+					<option value="CRP (C-Reactive Protein)">
+					<option value="HBsAg">
+					<option value="Anti-HCV">
+					<option value="VDRL">
+					<option value="Widal Test">
+					<option value="Dengue NS1 Antigen">
+					<option value="Dengue Antibodies (IgG & IgM)">
+					<option value="RA Factor">
+					
+					<option value="Urine R/M/E">
+					<option value="Urine Culture & Sensitivity (C/S)">
+					<option value="Stool R/M/E">
+					<option value="Stool Occult Blood Test (OBT)">
+					
+					<option value="Chest X-Ray (P/A View)">
+					<option value="X-Ray KUB">
+					<option value="X-Ray Cervical Spine (A/P & Lateral)">
+					<option value="X-Ray Lumbosacral Spine (A/P & Lateral)">
+					<option value="USG of Whole Abdomen">
+					<option value="USG of Lower Abdomen">
+					<option value="USG of KUB">
+					<option value="USG Pregnancy Profile">
+					<option value="CT Scan of Head">
+					<option value="HRCT of Chest">
+					<option value="MRI of Brain">
+					<option value="MRI of Lumbosacral Spine">
+					
+					<option value="ECG">
+					<option value="Echocardiogram">
+					<option value="Treadmill Test (ETT)">
+					<option value="Holter Monitor (24 Hours)">
+					<option value="Spirometry (PFT)">
+					
+					<option value="Sputum for AFB">
+					<option value="Mantoux Test (MT)">
+					<option value="FNAC">
+					<option value="Pap Smear">
+					<option value="Semen Analysis">
+					<option value="Endoscopy of Upper GIT">
+					<option value="Colonoscopy">
+							
+					<option value="Troponin-I">
+					<option value="CK-MB">
+					<option value="NT-proBNP">
+
+					<option value="PSA (Prostate Specific Antigen)">
+					<option value="CA 125">
+					<option value="CEA">
+					<option value="AFP (Alpha-Fetoprotein)">
+
+					<option value="Anti-HIV 1+2">
+					<option value="TPHA">
+					<option value="ASO Titre">
+					<option value="Blood Culture & Sensitivity">
+					<option value="H. Pylori Antigen (Stool)">
+					<option value="H. Pylori Antibody (Blood)">
+					<option value="Typhoid Dot (IgM/IgG)">
+					<option value="ANA (Anti-Nuclear Antibody)">
+					<option value="Anti-CCP">
+
+					<option value="LH (Luteinizing Hormone)">
+					<option value="FSH">
+					<option value="Serum Estradiol (E2)">
+					<option value="Serum Cortisol">
+					<option value="Serum Insulin (Fasting)">
+
+					<option value="D-Dimer">
+					<option value="Procalcitonin (PCT)">
+
+					<option value="Serum Amylase">
+					<option value="Serum Lipase">
+					<option value="Serum Magnesium">
+					<option value="Serum Phosphorus">
+
+					<option value="X-Ray Both Knee Joints (A/P & Lateral)">
+					<option value="X-Ray PNS (Occipitomental View)">
+					<option value="Mammography">
+					<option value="DEXA Scan (Bone Mineral Density)">
+					<option value="EEG (Electroencephalogram)">
+					<option value="NCV (Nerve Conduction Velocity)">
+                        </datalist>
+                        <button onclick="addInvestigation()" class="bg-teal-600 text-white px-4 rounded-xl text-xs font-bold hover:bg-teal-700 transition shrink-0"><i class="fa-solid fa-plus"></i></button>
+                    </div>
+                </div>
+
+                <div class="glass-card p-5 rounded-2xl relative">
+                    <h3 class="text-md font-bold text-blue-900 mb-2 flex items-center gap-2">
+                        <i class="fa-solid fa-capsules"></i> মেডিসিন সার্চ করুন
+                    </h3>
+                    <div class="relative">
+                        <span class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-slate-400">
+                            <i class="fa-solid fa-magnifying-glass"></i>
+                        </span>
+                        <input type="text" id="drug-search" onkeyup="searchMedicine(this.value)" class="w-full p-3 pl-10 rounded-xl border border-slate-300 focus:ring-2 focus:ring-blue-500 outline-none text-sm" placeholder="Type Brand, Generic or Company...">
+                    </div>
+                    
+                    <div id="suggestion-box" class="absolute left-5 right-5 mt-1 bg-white border border-slate-200 rounded-xl shadow-xl z-50 max-h-56 overflow-y-auto hidden no-scrollbar"></div>
+
+                    <div class="mt-4 grid grid-cols-4 gap-1.5 text-center text-xs font-semibold">
+                        <button onclick="setDosage('1+0+1', this)" class="dose-btn bg-blue-500 text-white p-2 rounded-lg transition">1+0+1</button>
+                        <button onclick="setDosage('1+1+1', this)" class="dose-btn bg-slate-200 p-2 rounded-lg hover:bg-blue-500 hover:text-white transition">1+1+1</button>
+                        <button onclick="setDosage('1+0+0', this)" class="dose-btn bg-slate-200 p-2 rounded-lg hover:bg-blue-500 hover:text-white transition">1+0+0</button>  
+                        <button onclick="setDosage('0+0+1', this)" class="dose-btn bg-slate-200 p-2 rounded-lg hover:bg-blue-500 hover:text-white transition">0+0+1</button>                    
+                        <input type="text" id="custom-dose" oninput="clearDoseSelection()" placeholder="অন্যান্য (ex: 2+0+2)" class="border border-slate-300 p-1.5 rounded-lg text-center text-xs col-span-4 mt-1">
+                    </div>
+                    
+                    <div class="mt-3 flex gap-2">
+                        <select id="duration" class="w-1/2 p-2 rounded-lg border text-xs bg-white">                      
+                            <option value="৩ দিন">৩ দিন</option>
+                            <option value="৫ দিন">৫ দিন</option>
+                            <option value="৭ দিন">৭ দিন</option> 
+                            <option value="১৫ দিন">১৫ দিন</option>                        
+                            <option value="১ মাস">১ মাস</option>
+                            <option value="চলবে">চলবে</option>
+                        </select>
+                        <select id="instruction" class="w-1/2 p-2 rounded-lg border text-xs bg-white">
+                            <option value="খাবারের আগে">খাবারের আগে/খালি পেটে</option>
+                            <option value="খাবারের পরে">খাবারের পরে/ভরা পেটে</option>
+                            <option value="খাবারের ৩০ মিনিট আগে">খাবারের ৩০ মিনিট আগে</option>
+							<option value="পায়খানার রাস্তায়">পায়খানার রাস্তায় (পায়ুপথে)</option>
+                        </select>
+                    </div>
+
+                    <button onclick="addMedicineToPad()" class="w-full mt-4 bg-blue-600 text-white p-2.5 rounded-xl font-bold text-sm hover:bg-blue-700 transition flex justify-center items-center gap-2">
+                        <i class="fa-solid fa-plus"></i> প্যাডে যুক্ত করুন
+                    </button>
+                </div>
+            </div>
+
+            <div id="tab-tools" class="space-y-6 hidden">
+                <div class="glass-card p-5 rounded-2xl border-t-4 border-indigo-500">
+                    <h3 class="text-md font-bold text-indigo-900 mb-3 flex items-center gap-2">
+                        <i class="fa-solid fa-calculator"></i> ক্লিনিক্যাল ক্যালকুলেটর
+                    </h3>
+                    <div class="mb-3 p-3 bg-white rounded-xl shadow-sm border border-slate-100">
+                        <h4 class="text-xs font-bold text-slate-700 mb-2">পেডিয়াট্রিক ডোজ (Pediatric Math)</h4>
+                        <div class="flex flex-col md:flex-row gap-2 mb-2">
+                            <select id="ped-drug" class="p-2 rounded-lg border text-xs focus:ring-2 focus:ring-indigo-400 outline-none w-full bg-white">
+                <optgroup label="Antipyretics & Analgesics (জ্বর ও ব্যথা)">
+                <option value="para_drop">Paracetamol Drops (80mg/ml) - 15mg/kg/dose</option>
+                <option value="para_120">Paracetamol Susp (120mg/5ml) - 15mg/kg/dose</option>
+                <option value="para_250">Paracetamol DS Susp (250mg/5ml) - 15mg/kg/dose</option>
+                <option value="ibu_100">Ibuprofen Susp (100mg/5ml) - 10mg/kg/dose</option>
+                <option value="dexibu_100">Dexibuprofen Susp (100mg/5ml) - 5-7.5mg/kg/dose</option>
+                <option value="mefenamic_50">Mefenamic Acid Susp (50mg/5ml) - 6.5mg/kg/dose</option>
+            </optgroup>
+
+            <optgroup label="Antibiotics - Penicillins">
+                <option value="amox_drop">Amoxicillin Drops (125mg/1.25ml) - 40-50mg/kg/day in divided doses</option>
+                <option value="amox_125">Amoxicillin Susp (125mg/5ml) - 40-50mg/kg/day</option>
+                <option value="amox_250">Amoxicillin DS Susp (250mg/5ml) - 40-50mg/kg/day</option>
+                <option value="coamox_156">Co-amoxiclav Susp (156.25mg/5ml) - 25-45mg/kg/day</option>
+                <option value="coamox_228">Co-amoxiclav Susp (228.5mg/5ml) - 25-45mg/kg/day</option>
+                <option value="coamox_312">Co-amoxiclav Forte (312.5mg/5ml) - 25-45mg/kg/day</option>
+                <option value="coamox_457">Co-amoxiclav Forte (457mg/5ml) - 25-45mg/kg/day</option>
+                <option value="fluclox_125">Flucloxacillin Susp (125mg/5ml) - 50-100mg/kg/day</option>
+            </optgroup>
+
+            <optgroup label="Antibiotics - Cephalosporins">
+                <option value="cefix_drop">Cefixime Drops (25mg/ml) - 8mg/kg/day</option>
+                <option value="cefix_100">Cefixime Susp (100mg/5ml) - 8mg/kg/day</option>
+                <option value="cefix_200">Cefixime DS Susp (200mg/5ml) - 8mg/kg/day</option>
+                <option value="cefurox_125">Cefuroxime Susp (125mg/5ml) - 20-30mg/kg/day</option>
+                <option value="cefpod_40">Cefpodoxime Susp (40mg/5ml) - 8mg/kg/day</option>
+                <option value="cephrad_125">Cephradine Susp (125mg/5ml) - 50-100mg/kg/day</option>
+                <option value="cefaclor_125">Cefaclor Susp (125mg/5ml) - 20-40mg/kg/day</option>
+            </optgroup>
+
+            <optgroup label="Antibiotics - Macrolides & Others">
+                <option value="azithro_15">Azithromycin Drops (15mg/ml) - 10mg/kg/day OD</option>
+                <option value="azithro_200">Azithromycin Susp (200mg/5ml) - 10mg/kg/day OD</option>
+                <option value="clarithro_125">Clarithromycin Susp (125mg/5ml) - 15mg/kg/day in 2 doses</option>
+                <option value="cotrim">Cotrimoxazole Susp (240mg/5ml) - 8mg/kg (TMP)/day</option>
+                <option value="metro_200">Metronidazole Susp (200mg/5ml) - 30-40mg/kg/day in 3 doses</option>
+                <option value="cipro_250">Ciprofloxacin Susp (250mg/5ml) - 20-30mg/kg/day</option>
+                <option value="nitro_25">Nitrofurantoin Susp (25mg/5ml) - 5-7mg/kg/day</option>
+            </optgroup>
+
+            <optgroup label="Antihistamines (সর্দি ও এলার্জি)">
+                <option value="cetirizine">Cetirizine Syrup (5mg/5ml) - 0.25mg/kg/day</option>
+                <option value="levocet">Levocetirizine Syrup (2.5mg/5ml) - 0.125mg/kg/day</option>
+                <option value="fexo_30">Fexofenadine Susp (30mg/5ml) - 6 months-2yrs: 15mg BD</option>
+                <option value="deslora">Desloratadine Syrup (2.5mg/5ml) - 1-5yrs: 1.25mg OD</option>
+                <option value="lora_5">Loratadine Syrup (5mg/5ml) - 2-12yrs: 5mg OD</option>
+                <option value="keto_1">Ketotifen Syrup (1mg/5ml) - >3yrs: 1mg BD</option>
+            </optgroup>
+
+            <optgroup label="Asthma & Bronchodilators (শ্বাসকষ্ট ও হাঁপানি)">
+                <option value="salbutamol_2">Salbutamol Syrup (2mg/5ml) - 0.15mg/kg/dose</option>
+                <option value="levosal_1">Levosalbutamol Syrup (1mg/5ml) - 0.05mg/kg/dose</option>
+                <option value="montelukast_4">Montelukast Granules/Tab (4mg) - 6mo-5yrs: 4mg OD</option>
+                <option value="doxofylline_100">Doxofylline Syrup (100mg/5ml) - 6-9mg/kg/dose BD</option>
+            </optgroup>
+
+            <optgroup label="Cough & Cold (কাশি)">
+                <option value="ambrox_drop">Ambroxol Drops (6mg/ml) - 1.2-1.6mg/kg/day</option>
+                <option value="ambrox_15">Ambroxol Syrup (15mg/5ml) - 1.2-1.6mg/kg/day</option>
+                <option value="bromhex_4">Bromhexine Syrup (4mg/5ml) - 0.3mg/kg/day</option>
+                <option value="butamirate">Butamirate Citrate Syrup (7.5mg/5ml) - Child: 5-10ml TID</option>
+                <option value="dextro_10">Dextromethorphan Syrup (10mg/5ml) - 1-2mg/kg/day</option>
+            </optgroup>
+
+            <optgroup label="Antiemetics (বমি)">
+                <option value="domp_drop">Domperidone Drops (5mg/ml) - 0.2-0.4mg/kg/dose</option>
+                <option value="domp_5">Domperidone Susp (5mg/5ml) - 0.2-0.4mg/kg/dose</option>
+                <option value="ondan_2">Ondansetron Syrup (2mg/5ml) - 0.15mg/kg/dose</option>
+            </optgroup>
+
+            <optgroup label="Antispasmodic (পেট ব্যথা)">
+                <option value="tiemonium">Tiemonium Syrup (10mg/5ml) - 3mg/kg/day</option>
+                <option value="dicyclo_10">Dicycloverine Syrup (10mg/5ml) - 6mo-2yrs: 5mg QID</option>
+            </optgroup>
+
+            <optgroup label="Anti-ulcerants / PPIs (গ্যাস্ট্রিক)">
+                <option value="omep_10">Omeprazole Susp (10mg/5ml) - 1mg/kg/day</option>
+                <option value="esomep_20">Esomeprazole Sachet (20mg) - >1yr: 10-20mg OD</option>
+                <option value="lansop_15">Lansoprazole ODT (15mg) - 1-2mg/kg/day</option>
+            </optgroup>
+
+            <optgroup label="Anti-diarrheal & Probiotics (ডায়রিয়া)">
+                <option value="zinc_20">Zinc Syrup (20mg/5ml) - <6mo: 10mg, >6mo: 20mg daily</option>
+                <option value="nita_100">Nitazoxanide Susp (100mg/5ml) - 1-3yrs: 100mg BD</option>
+                <option value="racecadotril">Racecadotril Sachet (10/30mg) - 1.5mg/kg/dose TID</option>
+                <option value="bacillus">Bacillus clausii Spores - 1-2 vials/day</option>
+            </optgroup>
+
+            <optgroup label="Anthelmintics (কৃমি)">
+                <option value="alben_200">Albendazole Susp (200mg/5ml) - >2yrs: 400mg single dose</option>
+                <option value="meben_100">Mebendazole Susp (100mg/5ml) - 100mg BD for 3 days</option>
+                <option value="ivermectin">Ivermectin (3mg/Tab) - 200mcg/kg single dose</option>
+            </optgroup>
+
+            <optgroup label="Vitamins, Minerals & Supplements">
+                <option value="iron_drop">Iron Polymaltose Drops (50mg/ml) - 3-6mg/kg/day</option>
+                <option value="iron_syr">Iron Polymaltose Syrup (50mg/5ml) - 3-6mg/kg/day</option>
+                <option value="calcium_syr">Calcium + Vit D3 Syrup - 5-10ml BD</option>
+                <option value="vit_d3_drop">Vitamin D3 Drops (400 IU/ml) - 400-800 IU daily</option>
+                <option value="multi_drop">Multivitamin Drops - 1ml daily</option>
+                <option value="multi_syr">Multivitamin Syrup - 5ml daily</option>
+            </optgroup>
+
+            <optgroup label="Laxatives (কষাপায়খানা)">
+                <option value="lactulose">Lactulose Syrup (3.35g/5ml) - 1-3ml/kg/day</option>
+                <option value="peg">Polyethylene Glycol (PEG) Sachet - 0.5-1g/kg/day</option>
+                <option value="glycerin_sup">Glycerin Suppository (1g/2g) - 1 supp per rectum</option>
+            </optgroup>
+
+            <optgroup label="Steroids (স্টেরয়েড)">
+                <option value="prednisolone_5">Prednisolone Syrup (5mg/5ml) - 1-2mg/kg/day</option>
+                <option value="dexa_0.5">Dexamethasone Syrup (0.5mg/5ml) - 0.15-0.6mg/kg/day</option>
+            </optgroup>
+
+            <optgroup label="Anticonvulsants (খিঁচুনি)">
+                <option value="valproate_200">Sodium Valproate Syrup (200mg/5ml) - 20-30mg/kg/day</option>
+                <option value="levetira_100">Levetiracetam Syrup (100mg/ml) - 20-40mg/kg/day</option>
+                <option value="phenobar_15">Phenobarbital Syrup (15mg/5ml) - 3-5mg/kg/day</option>
+            </optgroup>
+
+            <optgroup label="Antifungals & Antivirals">
+                <option value="flucon_50">Fluconazole Susp (50mg/5ml) - 3-6mg/kg/day</option>
+                <option value="nystatin_drop">Nystatin Drops (100,000 U/ml) - 1-2ml QID (Oral Thrush)</option>
+                <option value="acyclovir_200">Acyclovir Susp (200mg/5ml) - 20mg/kg QID (Max 800mg/dose)</option>
+            </optgroup>
+                            </select>
+                            <button onclick="calculatePediatricDose()" class="bg-indigo-500 text-white px-3 py-2 rounded-lg text-xs font-bold hover:bg-indigo-600 transition shrink-0">ক্যালকুলেট</button>
+                        </div>
+                        <div id="ped-result" class="text-sm font-bold text-center text-emerald-600 hidden bg-emerald-50 py-1 rounded"></div>
+                    </div>
+                    <div class="p-3 bg-white rounded-xl shadow-sm border border-slate-100">
+                        <h4 class="text-xs font-bold text-slate-700 mb-2">Cockcroft-Gault (CrCl)</h4>
+                        <div class="flex gap-2">
+                            <input type="number" step="0.1" id="serum-cr" placeholder="Serum Cr (mg/dL)" class="p-2 rounded-lg border text-xs w-full focus:ring-2 focus:ring-indigo-400 outline-none">
+                            <button onclick="calculateCrCl()" class="bg-indigo-500 text-white px-3 py-2 rounded-lg text-xs font-bold hover:bg-indigo-600 transition shrink-0">CrCl</button>
+                        </div>
+                        <div id="crcl-result" class="mt-2 text-xs text-center hidden p-1 rounded"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="tab-history" class="space-y-6 hidden">
+                <div class="glass-card p-5 rounded-2xl bg-blue-50 border border-blue-100">
+                    <h3 class="text-md font-bold text-blue-900 mb-3 flex items-center gap-2">
+                        <i class="fa-solid fa-history"></i> রোগীর পুরানো রেকর্ড খুঁজুন
+                    </h3>
+                    <div class="space-y-3">
+                        <div class="flex gap-2">
+                            <input type="text" id="search-log-phone" placeholder="মোবাইল নম্বর টাইপ করুন..." class="w-2/3 p-2 rounded-xl border border-blue-300 text-sm focus:ring-2 focus:ring-blue-500 outline-none">
+                            <button onclick="searchPatientLog()" class="w-1/3 bg-blue-600 text-white rounded-xl text-xs font-bold hover:bg-blue-700 transition">
+                                <i class="fa-solid fa-search"></i> সার্চ
+                            </button>
+                        </div>
+                        <div id="log-status" class="text-xs font-semibold text-emerald-600 hidden text-center"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="tab-settings" class="space-y-6 hidden">
+                <div class="glass-card p-5 rounded-2xl">
+                    <h3 class="text-md font-bold text-blue-900 mb-3 flex items-center gap-2">
+                        <i class="fa-solid fa-user-md"></i> ডক্টর প্রোফাইল ও সেটিংস
+                    </h3>
+                    <div class="space-y-3">
+                        <input type="text" id="doc-name" value="Dr. Shariar Mahamud (Kabbo)" oninput="updatePrescription()" class="w-full p-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-blue-500 outline-none text-sm">
+                        <input type="text" id="doc-degrees" value="MBBS, MPH (NUB), Public Health Specialist" oninput="updatePrescription()" class="w-full p-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-blue-500 outline-none text-sm">
+                        <input type="text" id="doc-chamber" value="City Medical Center, Dhaka" oninput="updatePrescription()" class="w-full p-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-blue-500 outline-none text-sm">
+                        
+                        <label class="block text-xs font-semibold text-slate-500 mt-2">প্যাড টেমপ্লেট সিলেকশন</label>
+                        <select id="theme-selector" onchange="changeTemplate(this.value)" class="w-full p-2.5 rounded-xl border border-slate-300 bg-white text-sm">
+                            <option value="theme-classic-blue">Classic Blue Theme</option>
+                            <option value="theme-teal-premium">Teal Premium Theme</option>
+                            <option value="theme-minimalist">Modern Minimalist</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            
+        </section>
+
+        <section id="preview-section" class="lg:col-span-7 hidden lg:block">
+            <div class="mb-3 flex flex-wrap gap-2 justify-end">
+                <button onclick="printPrescription()" class="bg-emerald-600 text-white px-3 py-2 rounded-xl text-xs font-bold hover:bg-emerald-700 flex items-center gap-1.5 shadow"><i class="fa-solid fa-print"></i> PDF/Print</button>
+                <button onclick="shareWhatsApp()" class="bg-green-500 text-white px-3 py-2 rounded-xl text-xs font-bold hover:bg-green-600 flex items-center gap-1.5 shadow"><i class="fa-brands fa-whatsapp"></i> WhatsApp</button>
+                <button onclick="saveCurrentRxToLog()" class="bg-blue-700 text-white px-3 py-2 rounded-xl text-xs font-bold hover:bg-blue-800 flex items-center gap-1.5 shadow"><i class="fa-solid fa-floppy-disk"></i> রেকর্ড সেভ</button>
+            </div>
+
+            <div id="prescription-pad" class="bg-white p-8 rounded-none shadow-lg min-h-[285mm] flex flex-col justify-between theme-classic-blue">
+                <div>
+                    <div class="flex justify-between items-start border-b pb-4 border-slate-200">
+                        <div>
+                            <h1 id="pad-doc-name" class="text-xl font-bold text-blue-900">Dr. Shariar Mahamud (Kabbo)</h1>
+                            <p id="pad-doc-degrees" class="text-xs text-slate-600 mt-0.5">MBBS, MPH (NUB), Public Health Specialist</p>
+                            <p id="pad-doc-chamber" class="text-xs text-slate-500 mt-1">City Medical Center, Dhaka</p>
+                        </div>
+                        <div class="text-right">
+                            <div class="inline-block bg-blue-100 text-blue-800 text-xs px-2.5 py-1 rounded-md font-bold mb-1"><i class="fa-solid fa-heart-pulse"></i> RxPro</div>
+                            <p class="text-xs text-slate-400">হেল্পলাইন: ০১৭২৪-৬৫১২১২</p>
+                        </div>
+                    </div>
+
+                    <div class="bg-slate-50 p-3 rounded-lg my-4 grid grid-cols-12 gap-2 text-xs border border-slate-100">
+                        <div class="col-span-4"><strong>রোগী:</strong> <span id="pad-p-name">..........</span></div>
+                        <div class="col-span-2"><strong>বয়স:</strong> <span id="pad-p-age">--</span></div>
+                        <div class="col-span-2"><strong>ওজন:</strong> <span id="pad-p-weight">--</span> kg</div>
+                        <div class="col-span-1"><strong>লিঙ্গ:</strong> <span id="pad-p-gender">M</span></div>
+                        <div class="col-span-3 text-right"><strong>তারিখ:</strong> <span id="current-date"></span></div>
+                    </div>
+
+                    <div class="grid grid-cols-12 gap-4 min-h-[180mm]">
+                        <div class="col-span-3 border-r pr-3 border-slate-200 text-xs space-y-6">
+                            
+                            <div>
+                                <h4 class="font-bold text-blue-950 border-b-2 pb-1 mb-2 flex justify-between items-center uppercase tracking-wide">
+                                    <span>C/C</span>
+                                    <div>
+                                        <button onclick="startVoiceTyping('cc-list', event)" class="text-slate-400 hover:text-red-500 transition px-1"><i class="fa-solid fa-microphone"></i></button>
+                                        <button onclick="addMetadataRow('cc-list')" class="text-blue-600 hover:text-blue-800 transition text-[10px] bg-blue-50 px-1.5 py-0.5 rounded-md font-bold"><i class="fa-solid fa-plus"></i></button>
+                                    </div>
+                                </h4>
+                                <ul id="cc-list" class="space-y-2 list-none pl-0" oninput="saveDraftPrescription()">
+                                    <li class="flex items-start gap-1 group animation-fadeIn">
+                                        <span class="text-blue-500 mt-0.5">▪</span>
+                                        <div contenteditable="true" class="text-slate-700 outline-none flex-1 font-medium min-h-[16px]">Fever x 3 days</div>
+                                        <button onclick="this.parentElement.remove(); saveDraftPrescription();" class="text-red-400 opacity-0 group-hover:opacity-100 transition text-[10px] pl-1"><i class="fa-solid fa-xmark"></i></button>
+                                    </li>
+                                </ul>
+                            </div>
+
+                            <div>
+                                <h4 class="font-bold text-blue-950 border-b-2 pb-1 mb-2 flex justify-between items-center uppercase tracking-wide">
+                                    <span>O/E</span>
+                                    <button onclick="addMetadataRow('oe-list')" class="text-blue-600 hover:text-blue-800 transition text-[10px] bg-blue-50 px-1.5 py-0.5 rounded-md font-bold"><i class="fa-solid fa-plus"></i></button>
+                                </h4>
+                                <ul id="oe-list" class="space-y-2 list-none pl-0" oninput="saveDraftPrescription()">
+                                    <li class="flex items-center gap-1 group animation-fadeIn">
+                                        <span class="text-slate-500 font-semibold w-12 text-[11px]">B/P:</span>
+                                        <div contenteditable="true" class="text-slate-700 outline-none border-b border-transparent hover:border-slate-300 focus:border-blue-500 flex-1 font-medium">120/80 mmHg</div>
+                                    </li>
+                                    <li class="flex items-center gap-1 group animation-fadeIn">
+                                        <span class="text-slate-500 font-semibold w-12 text-[11px]">Pulse:</span>
+                                        <div contenteditable="true" class="text-slate-700 outline-none border-b border-transparent hover:border-slate-300 focus:border-blue-500 flex-1 font-medium">78 b/min</div>
+                                    </li>
+                                    <li class="flex items-center gap-1 group animation-fadeIn">
+                                        <span class="text-slate-500 font-semibold w-12 text-[11px]">Temp:</span>
+                                        <div contenteditable="true" class="text-slate-700 outline-none border-b border-transparent hover:border-slate-300 focus:border-blue-500 flex-1 font-medium">98.6 °F</div>
+                                    </li>
+                                </ul>
+                            </div>
+
+                            <div class="mt-4 pt-2 border-t-2 border-slate-100">
+                                <h4 class="font-bold text-teal-900 pb-1 mb-2 flex justify-between items-center uppercase tracking-wide">
+                                    <span>Inv (Tests)</span>
+                                </h4>
+                                <ol id="pad-inv-list" class="space-y-1.5 list-decimal pl-4 text-xs font-semibold text-slate-800"></ol>
+                            </div>
+                        </div>
+                        
+                        <div class="col-span-9 pl-2">
+                            <span class="text-2xl font-serif font-bold text-blue-900 block mb-2 leading-none">℞</span>
+                            <ol id="pad-medicine-list" class="space-y-4 list-decimal pl-4 text-sm"></ol>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="border-t pt-4 border-slate-200 flex justify-between items-end text-[10px] text-slate-400 relative">
+                    <div>
+                        <div>এই প্রেসক্রিপশনটি একটি ডিজিটাল জেনারেটেড সিস্টেম।</div>
+                        <div class="font-mono mt-1">Powered by RxPro Engine v1.0</div>
+                    </div>
+                    <div id="qrcode-container" class="w-16 h-16 opacity-80 mix-blend-multiply"></div>
+                </div>
+            </div>
+        </section>
+
+        <section id="dashboard-section" class="lg:col-span-12 hidden">
+            <div class="glass-card p-6 rounded-2xl min-h-[60vh]">
+                <h2 class="text-2xl font-bold text-blue-900 mb-6 flex items-center gap-2"><i class="fa-solid fa-chart-pie"></i> পেসেন্ট অ্যানালিটিক্স</h2>
+                
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                    <div class="bg-blue-500 text-white p-5 rounded-xl shadow-lg">
+                        <h4 class="text-sm font-semibold opacity-80">Total Patients Seen</h4>
+                        <p id="dash-total-patients" class="text-3xl font-bold mt-1">0</p>
+                    </div>
+                    <div class="bg-indigo-500 text-white p-5 rounded-xl shadow-lg">
+                        <h4 class="text-sm font-semibold opacity-80">Total Prescriptions</h4>
+                        <p id="dash-total-rx" class="text-3xl font-bold mt-1">0</p>
+                    </div>
+                    <div class="bg-teal-500 text-white p-5 rounded-xl shadow-lg">
+                        <h4 class="text-sm font-semibold opacity-80">Male / Female Ratio</h4>
+                        <p id="dash-gender-ratio" class="text-3xl font-bold mt-1">0 / 0</p>
+                    </div>
+                </div>
+
+                <div class="bg-white p-5 rounded-xl border border-slate-200">
+                    <h3 class="text-md font-bold text-slate-700 mb-4">Patient Visits Trend</h3>
+                    <canvas id="patientChart" height="80"></canvas>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <div class="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 shadow-[0_-10px_40px_rgba(0,0,0,0.1)] flex justify-around py-2.5 z-50">
+        <button onclick="switchSection('edit-section')" class="flex flex-col items-center gap-1 text-blue-600"><i class="fa-solid fa-file-signature text-xl"></i><span class="text-[10px] font-bold">এডমিন প্যানেল</span></button>
+        <button onclick="switchSection('preview-section')" class="flex flex-col items-center gap-1 text-slate-500 hover:text-blue-600"><i class="fa-solid fa-receipt text-xl"></i><span class="text-[10px] font-bold">লাইভ ভিউ</span></button>
+        <button onclick="switchSection('dashboard-section')" class="flex flex-col items-center gap-1 text-slate-500 hover:text-blue-600"><i class="fa-solid fa-chart-pie text-xl"></i><span class="text-[10px] font-bold">রিপোর্ট</span></button>
+    </div>
+
+    <div id="toast-container" class="fixed bottom-20 left-1/2 transform -translate-x-1/2 bg-blue-900 text-white px-5 py-3 rounded-full shadow-2xl transition-all duration-300 opacity-0 pointer-events-none z-[60] flex items-center gap-2 font-semibold text-sm">
+        <i class="fa-solid fa-circle-info"></i>
+        <span id="toast-message">Notification</span>
+    </div>
+
+    <script>
+        // Expanded Drug Database for better demonstration
+        const medicineDB = [
+            { name: "Napa 500mg (Tablet)", generic: "Paracetamol", company: "Beximco" },
+            { name: "Napa Extend (Tablet)", generic: "Paracetamol", company: "Beximco" },
+            { name: "Napa Syrup", generic: "Paracetamol", company: "Beximco" },
+            { name: "Seclo 20mg (Capsule)", generic: "Omeprazole", company: "Square" },
+            { name: "Seclo 40mg (Capsule)", generic: "Omeprazole", company: "Square" },
+            { name: "Alatrol 10mg (Tablet)", generic: "Cetirizine", company: "Square" },
+            { name: "Alatrol Syrup", generic: "Cetirizine", company: "Square" },
+            { name: "Fenadin 120mg (Tablet)", generic: "Fexofenadine", company: "Renata" },
+            { name: "Fenadin 180mg (Tablet)", generic: "Fexofenadine", company: "Renata" },
+            { name: "Zimax 500mg (Tablet)", generic: "Azithromycin", company: "Acme" },
+            { name: "Zimax 250mg (Tablet)", generic: "Azithromycin", company: "Acme" },
+            { name: "Fexo 120mg (Tablet)", generic: "Fexofenadine", company: "Square" },
+            { name: "Fexo 180mg (Tablet)", generic: "Fexofenadine", company: "Square" },
+            { name: "Ace 500mg (Tablet)", generic: "Paracetamol", company: "Square" },
+            { name: "Ace Plus (Tablet)", generic: "Paracetamol + Caffeine", company: "Square" },
+            { name: "Sergel 20mg (Capsule)", generic: "Esomeprazole", company: "Healthcare" },
+            { name: "Sergel 40mg (Capsule)", generic: "Esomeprazole", company: "Healthcare" },
+            { name: "Maxpro 20mg (Tablet)", generic: "Esomeprazole", company: "Renata" },
+            { name: "Maxpro 40mg (Tablet)", generic: "Esomeprazole", company: "Renata" },
+            { name: "Losectil 20mg (Capsule)", generic: "Omeprazole", company: "Sandoz" },
+            { name: "Pantonix 20mg (Tablet)", generic: "Pantoprazole", company: "Incepta" },
+            { name: "Pantonix 40mg (Tablet)", generic: "Pantoprazole", company: "Incepta" },
+            { name: "Esonix 20mg (Tablet)", generic: "Esomeprazole", company: "Incepta" },
+            { name: "Monas 10mg (Tablet)", generic: "Montelukast", company: "Acme" },
+            { name: "Monas 5mg (Chewable)", generic: "Montelukast", company: "Acme" },
+            { name: "Amodis 400mg (Tablet)", generic: "Metronidazole", company: "Aristopharma" },
+            { name: "Amodis Suspension", generic: "Metronidazole", company: "Aristopharma" },
+            { name: "Flagyl 400mg (Tablet)", generic: "Metronidazole", company: "Sanofi" },
+            { name: "Filmet 400mg (Tablet)", generic: "Metronidazole", company: "Square" },
+            { name: "Entocyd (Tablet)", generic: "Magaldrate + Simethicone", company: "Incepta" },
+            { name: "Gavisol (Suspension)", generic: "Sodium Alginate", company: "Healthcare" },
+            { name: "Bextram Gold (Tablet)", generic: "Multivitamin & Multimineral", company: "Beximco" },
+            { name: "Filwel Gold (Tablet)", generic: "Multivitamin & Multimineral", company: "Square" },
+            { name: "Ceevit 250mg (Chewable)", generic: "Vitamin C", company: "Square" },
+            { name: "Calbo D (Tablet)", generic: "Calcium + Vitamin D3", company: "Square" },
+            { name: "Coralcal D (Tablet)", generic: "Calcium + Vitamin D3", company: "Beacon" },
+            { name: "Rivotril 0.5mg (Tablet)", generic: "Clonazepam", company: "Radiant" },
+            { name: "Sedno 1mg (Tablet)", generic: "Bromazepam", company: "Techno" },
+            { name: "Fixit 200mg (Capsule)", generic: "Cefixime", company: "Incepta" },
+            { name: "Fixit 400mg (Capsule)", generic: "Cefixime", company: "Incepta" },
+            { name: "Cef-3 200mg (Capsule)", generic: "Cefixime", company: "Square" },
+            { name: "Ciprocin 500mg (Tablet)", generic: "Ciprofloxacin", company: "Square" },
+            { name: "Fluclox 500mg (Capsule)", generic: "Flucloxacillin", company: "Incepta" },
+            { name: "Tofen 1mg (Tablet)", generic: "Ketotifen", company: "Acme" },
+            { name: "Tofen Syrup", generic: "Ketotifen", company: "Acme" },
+            { name: "Deslor 5mg (Tablet)", generic: "Desloratadine", company: "Aristopharma" },
+            { name: "Neocort (Eye/Ear Drop)", generic: "Dexamethasone", company: "Incepta" },
+            { name: "Aristovit B (Tablet)", generic: "Vitamin B Complex", company: "Aristopharma" },
+            { name: "Sedil 5mg (Tablet)", generic: "Diazepam", company: "Square" },
+            { name: "Indever 10mg (Tablet)", generic: "Propranolol", company: "Incepta" },
+            { name: "Nexum 20mg (Tablet)", generic: "Esomeprazole", company: "Square" },
+            { name: "Nexum 40mg (Tablet)", generic: "Esomeprazole", company: "Square" },
+            { name: "Finix 20mg (Tablet)", generic: "Rabeprazole", company: "Opsonin" },
+            { name: "Finix 40mg (Tablet)", generic: "Rabeprazole", company: "Opsonin" },
+            { name: "Rabe 20mg (Tablet)", generic: "Rabeprazole", company: "Square" },
+            { name: "Emanil 20mg (Tablet)", generic: "Esomeprazole", company: "Acme" },
+            { name: "Opton 20mg (Tablet)", generic: "Pantoprazole", company: "Opsonin" },
+            { name: "Proseptin 20mg (Capsule)", generic: "Omeprazole", company: "Healthcare" },
+            { name: "Gastalfet (Suspension)", generic: "Sucralfate", company: "Incepta" },
+            { name: "Entacyd Plus (Suspension)", generic: "Magaldrate + Simethicone", company: "Square" },
+            { name: "Flatameal DS (Tablet)", generic: "Aluminium Hydroxide + Simethicone", company: "Beximco" },
+            { name: "Domper 10mg (Tablet)", generic: "Domperidone", company: "Incepta" },
+            { name: "Omidon 10mg (Tablet)", generic: "Domperidone", company: "Incepta" },
+            { name: "Omidon Suspension", generic: "Domperidone", company: "Incepta" },
+            { name: "Motigut 10mg (Tablet)", generic: "Domperidone", company: "Square" },
+            { name: "Vergon 10mg (Tablet)", generic: "Meclizine Hydrochloride", company: "Incepta" },
+            { name: "Joytrip (Tablet)", generic: "Hyoscine Hydrobromide", company: "Incepta" },
+            { name: "Azmasol 200 (Inhaler)", generic: "Salbutamol", company: "Beximco" },
+            { name: "Cef-3 400mg (Capsule)", generic: "Cefixime", company: "Square" },
+            { name: "Cef-3 DS (Suspension)", generic: "Cefixime", company: "Square" },
+            { name: "Maguacef 500mg (Tablet)", generic: "Cefuroxime", company: "Square" },
+            { name: "Cerox 500mg (Tablet)", generic: "Cefuroxime", company: "Incepta" },
+            { name: "Furocef 500mg (Tablet)", generic: "Cefuroxime", company: "Renata" },
+            { name: "Xalyn 500mg (Tablet)", generic: "Levofloxacin", company: "Incepta" },
+            { name: "Levobac 500mg (Tablet)", generic: "Levofloxacin", company: "Square" },
+            { name: "Avoflox 500mg (Tablet)", generic: "Levofloxacin", company: "Beximco" },
+            { name: "Avelox 400mg (Tablet)", generic: "Moxifloxacin", company: "Bayer" },
+            { name: "Moxaclav 625 (Tablet)", generic: "Amoxicillin + Clavulanic Acid", company: "Square" },
+            { name: "Fimoxyl 500mg (Capsule)", generic: "Amoxicillin", company: "Square" },
+            { name: "Moxilin 500mg (Capsule)", generic: "Amoxicillin", company: "Renata" },
+            { name: "Metryl 400mg (Tablet)", generic: "Metronidazole", company: "Eskayef" },
+            { name: "Doxicap (Capsule)", generic: "Doxycycline", company: "Incepta" },
+            { name: "Tetracycline 500mg (Capsule)", generic: "Tetracycline", company: "Square" },
+            { name: "Eromycin 500mg (Tablet)", generic: "Erythromycin", company: "Square" },
+            { name: "Klaricid 500mg (Tablet)", generic: "Clarithromycin", company: "Radiant" },
+            { name: "Xeldrin 500mg (Tablet)", generic: "Paracetamol", company: "Incepta" },
+            { name: "Fast 500mg (Tablet)", generic: "Paracetamol", company: "Acme" },
+            { name: "Ace Suppository 125mg", generic: "Paracetamol", company: "Square" },
+            { name: "Ace Suppository 250mg", generic: "Paracetamol", company: "Square" },
+            { name: "Napa Suppository 500mg", generic: "Paracetamol", company: "Beximco" },
+            { name: "Eto 60mg (Tablet)", generic: "Etoricoxib", company: "Square" },
+            { name: "Eto 90mg (Tablet)", generic: "Etoricoxib", company: "Square" },
+            { name: "Eto 120mg (Tablet)", generic: "Etoricoxib", company: "Square" },
+            { name: "Flamex 400mg (Tablet)", generic: "Ibuprofen", company: "Incepta" },
+            { name: "Napryn 250mg (Tablet)", generic: "Naproxen", company: "Square" },
+            { name: "Napryn 500mg (Tablet)", generic: "Naproxen", company: "Square" },
+            { name: "Anaprox 550mg (Tablet)", generic: "Naproxen Sodium", company: "Incepta" },
+            { name: "Xofen 50mg (Tablet)", generic: "Diclofenac Sodium", company: "Incepta" },
+            { name: "Clofenac 50mg (Tablet)", generic: "Diclofenac Sodium", company: "Square" },
+            { name: "Tramadol 50mg (Capsule)", generic: "Tramadol Hydrochloride", company: "Square" },
+            { name: "Windel Syrup", generic: "Salbutamol", company: "Square" },
+            { name: "Brosal Syrup", generic: "Salbutamol", company: "Incepta" },
+            { name: "Ambrox Syrup", generic: "Ambroxol Hydrochloride", company: "Square" },
+            { name: "Adryl Syrup", generic: "Diphenhydramine Hydrochloride", company: "Square" },
+            { name: "Fexo Syrup", generic: "Fexofenadine", company: "Square" },
+            { name: "Pedituss Syrup", generic: "Guaifenesin", company: "Square" },
+            { name: "Butasyl (Tablet)", generic: "Salbutamol", company: "Square" },
+            { name: "Monas 4mg (Sachet)", generic: "Montelukast", company: "Acme" },
+            { name: "Provair 10mg (Tablet)", generic: "Montelukast", company: "Healthcare" },
+            { name: "B-50 Forte (Tablet)", generic: "Vitamin B Complex", company: "Square" },
+            { name: "Neuro-B (Tablet)", generic: "Vitamin B1+B6+B12", company: "Square" },
+            { name: "A-Z Gold (Tablet)", generic: "Multivitamin & Multimineral", company: "Incepta" },
+            { name: "Revital (Tablet)", generic: "Multivitamin", company: "Beximco" },
+            { name: "Surbex-T (Tablet)", generic: "Vitamin B-Complex + C", company: "Abbott" },
+            { name: "Sharkol (Capsule)", generic: "Cod Liver Oil", company: "Square" },
+            { name: "Osteocal (Tablet)", generic: "Calcium Carbonate", company: "Square" },
+            { name: "Calbo Gold (Tablet)", generic: "Calcium + Vitamin D3 + Minerals", company: "Square" },
+            { name: "Pevisone (Cream)", generic: "Econazole + Triamcinolone", company: "Janssen" },
+            { name: "Econate (Cream)", generic: "Econazole Nitrate", company: "Square" },
+            { name: "Baneocin (Ointment)", generic: "Bacitracin + Neomycin", company: "Sandoz" },
+            { name: "Betnovate N (Cream)", generic: "Betamethasone + Neomycin", company: "GSK" },
+            { name: "Derma (Cream)", generic: "Clotrimazole", company: "Square" },
+            { name: "Fungidal (Cream)", generic: "Clotrimazole", company: "Incepta" },
+            { name: "Nystat (Ointment)", generic: "Nystatin", company: "Square" },
+            { name: "Osartil 50mg (Tablet)", generic: "Losartan Potassium", company: "Incepta" },
+            { name: "Angilock 50mg (Tablet)", generic: "Losartan Potassium", company: "Square" },
+            { name: "Bizoran 5/20 (Tablet)", generic: "Amlodipine + Olmesartan", company: "Square" },
+            { name: "Camlodin 5mg (Tablet)", generic: "Amlodipine", company: "Square" },
+            { name: "Combiomin 500 (Tablet)", generic: "Metformin Hydrochloride", company: "Square" },
+            { name: "Daonil 5mg (Tablet)", generic: "Glibenclamide", company: "Sanofi" },
+            { name: "Pedicef Syrup", generic: "Cefixime", company: "Healthcare" },
+            { name: "Orsaline-N", generic: "Oral Rehydration Salt", company: "SMC" },
+            { name: "Rice Saline", generic: "Rice Based ORS", company: "SMC" },
+            { name: "Zinc-B Syrup", generic: "Zinc Sulfate", company: "Square" },
+            { name: "Amodis Suspension", generic: "Metronidazole", company: "Aristopharma" },
+            { name: "Salolin 100 (Inhaler)", generic: "Salbutamol", company: "Eskayef" },
+            { name: "Ipravent (Inhaler)", generic: "Ipratropium Bromide", company: "Beximco" },
+            { name: "Budeson (Inhaler)", generic: "Budesonide", company: "Incepta" },
+            { name: "Tiomax (Inhaler)", generic: "Tiotropium", company: "Square" },
+            { name: "Beclomet (Inhaler)", generic: "Beclometasone", company: "Beximco" },
+            { name: "Flutiform (Inhaler)", generic: "Fluticasone + Formoterol", company: "Incepta" },
+            { name: "Montene 10mg (Tablet)", generic: "Montelukast", company: "Square" },
+            { name: "Arokast 10mg (Tablet)", generic: "Montelukast", company: "Aristopharma" },
+            { name: "Rofumark 500 (Tablet)", generic: "Roflumilast", company: "Incepta" },
+            { name: "Prucal 2mg (Tablet)", generic: "Prucalopride", company: "Incepta" },
+            { name: "Linagut 290mcg (Capsule)", generic: "Linaclotide", company: "Square" },
+            { name: "Avolac (Syrup)", generic: "Lactulose", company: "Incepta" },
+            { name: "Osmolax (Syrup)", generic: "Lactulose", company: "Square" },
+            { name: "Normigut 200mg (Tablet)", generic: "Rifaximin", company: "Incepta" },
+            { name: "Rifagut 400mg (Tablet)", generic: "Rifaximin", company: "Square" },
+            { name: "Ursolax 300mg (Tablet)", generic: "Ursodeoxycholic Acid", company: "Healthcare" },
+            { name: "Uroson 300mg (Tablet)", generic: "Ursodeoxycholic Acid", company: "Opsonin" },
+            { name: "Silic-50 (Tablet)", generic: "Silymarin", company: "Incepta" },
+            { name: "Cefotil 500mg (Tablet)", generic: "Cefuroxime", company: "Incepta" },
+            { name: "Xit 500mg (Tablet)", generic: "Azithromycin", company: "Incepta" },
+            { name: "Gatilin 400mg (Tablet)", generic: "Gatifloxacin", company: "Square" },
+            { name: "Gemif 320mg (Tablet)", generic: "Gemifloxacin", company: "Beximco" },
+            { name: "Flugal 150mg (Capsule)", generic: "Fluconazole", company: "Square" },
+            { name: "Lucan 150mg (Capsule)", generic: "Fluconazole", company: "Incepta" },
+            { name: "Itra 100mg (Capsule)", generic: "Itraconazole", company: "Square" },
+            { name: "Terbi 250mg (Tablet)", generic: "Terbinafine", company: "Incepta" },
+            { name: "Nystat (Oral Drop)", generic: "Nystatin", company: "Square" },
+            { name: "Bisonol 5mg (Tablet)", generic: "Bisoprolol Fumarate", company: "Square" },
+            { name: "Betaloc 50mg (Tablet)", generic: "Metoprolol", company: "AstraZeneca" },
+            { name: "Tenoren 50mg (Tablet)", generic: "Atenolol", company: "Incepta" },
+            { name: "Cardopril 25mg (Tablet)", generic: "Captopril", company: "Square" },
+            { name: "Envas 5mg (Tablet)", generic: "Enalapril", company: "Incepta" },
+            { name: "Repril 5mg (Tablet)", generic: "Ramipril", company: "Square" },
+            { name: "Olmetec 20mg (Tablet)", generic: "Olmesartan", company: "Radiant" },
+            { name: "Atova 10mg (Tablet)", generic: "Atorvastatin", company: "Square" },
+            { name: "Rovustar 10mg (Tablet)", generic: "Rosuvastatin", company: "Incepta" },
+            { name: "Ecosprin 75mg (Tablet)", generic: "Aspirin", company: "Acme" },
+            { name: "Clopid 75mg (Tablet)", generic: "Clopidogrel", company: "Incepta" },
+            { name: "Glim 2mg (Tablet)", generic: "Glimepiride", company: "Square" },
+            { name: "Secrin 2mg (Tablet)", generic: "Glimepiride", company: "Incepta" },
+            { name: "Januvia 100mg (Tablet)", generic: "Sitagliptin", company: "Radiant" },
+            { name: "Vildas 50mg (Tablet)", generic: "Vildagliptin", company: "Square" },
+            { name: "Trajenta 5mg (Tablet)", generic: "Linagliptin", company: "Boehringer" },
+            { name: "Jardiance 10mg (Tablet)", generic: "Empagliflozin", company: "Radiant" },
+            { name: "Gynomix (Suppository)", generic: "Metronidazole + Miconazole", company: "Incepta" },
+            { name: "V-Gel (Ointment)", generic: "Herbal (Himalaya)", company: "Himalaya" },
+            { name: "Fetol 400mcg (Tablet)", generic: "Folic Acid", company: "Incepta" },
+            { name: "I-Folic (Tablet)", generic: "Iron + Folic Acid", company: "Square" },
+            { name: "Zif-CI (Capsule)", generic: "Iron + Zinc + Vitamin C", company: "Square" },
+            { name: "Gestone 200mg (Capsule)", generic: "Progesterone", company: "Incepta" },
+            { name: "Uteron (Tablet)", generic: "Allylestrenol", company: "Incepta" },
+            { name: "Noretyn 5mg (Tablet)", generic: "Norethisterone", company: "Renata" },
+            { name: "Anxit 0.5mg (Tablet)", generic: "Alprazolam", company: "Square" },
+            { name: "Zolax 0.5mg (Tablet)", generic: "Alprazolam", company: "Incepta" },
+            { name: "Pase 0.5mg (Tablet)", generic: "Clonazepam", company: "Incepta" },
+            { name: "Disopan 2mg (Tablet)", generic: "Nitrazepam", company: "Incepta" },
+            { name: "Nexital 10mg (Tablet)", generic: "Escitalopram", company: "Square" },
+            { name: "Luxit 10mg (Tablet)", generic: "Escitalopram", company: "Incepta" },
+            { name: "Epival 500mg (Tablet)", generic: "Sodium Valproate", company: "Incepta" },
+            { name: "Pregaba 75mg (Capsule)", generic: "Pregabalin", company: "Square" },
+            { name: "Minalgin 500mg (Tablet)", generic: "Dipyrone", company: "Renata" },
+            { name: "Bone-C (Chewable)", generic: "Calcium Carbonate", company: "Beximco" },
+            { name: "Vitrum 50+ (Tablet)", generic: "Multivitamin", company: "Radiant" },
+            { name: "Neuro-Plus (Tablet)", generic: "Vitamin B1+B6+B12", company: "Incepta" },
+            { name: "D-Rise 20000 IU (Capsule)", generic: "Vitamin D3", company: "Incepta" },
+            { name: "E-Cap 400mg (Capsule)", generic: "Vitamin E", company: "Drug International" },
+            { name: "Moxitrol (Eye Drop)", generic: "Moxifloxacin + Dexamethasone", company: "Incepta" },
+            { name: "Tobra (Eye Drop)", generic: "Tobramycin", company: "Square" },
+            { name: "Latan (Eye Drop)", generic: "Latanoprost", company: "Incepta" },
+            { name: "Tears Fresh (Eye Drop)", generic: "Carboxymethylcellulose", company: "Square" },
+            { name: "Mamvit (Tablet)", generic: "Multivitamin & Multimineral", company: "Incepta" },
+            { name: "Prenatal (Tablet)", generic: "Multivitamin", company: "Square" },
+            { name: "Isovent 200mg (Tablet)", generic: "Misoprostol", company: "Incepta" },
+            { name: "Misoclear 200mg (Tablet)", generic: "Misoprostol", company: "Ziska" },
+            { name: "Dydrobo 10mg (Tablet)", generic: "Dydrogesterone", company: "Incepta" },
+            { name: "Duphaston 10mg (Tablet)", generic: "Dydrogesterone", company: "Abbott" },
+            { name: "Ocluv 50mg (Tablet)", generic: "Clomifene Citrate", company: "Incepta" },
+            { name: "Letrol 2.5mg (Tablet)", generic: "Letrozole", company: "Incepta" },
+            { name: "Cabolin 0.5mg (Tablet)", generic: "Cabergoline", company: "Incepta" },
+            { name: "Dostinex 0.5mg (Tablet)", generic: "Cabergoline", company: "Pfizer" },
+            { name: "Gestrenol 5mg (Tablet)", generic: "Allylestrenol", company: "Square" },
+            { name: "Brofex Syrup", generic: "Ambroxol + Guaifenesin", company: "Incepta" },
+            { name: "Tusca Syrup", generic: "Guaifenesin + Levomenthol", company: "Square" },
+            { name: "Cofnil Syrup", generic: "Diphenhydramine + Ammonium Chloride", company: "Incepta" },
+            { name: "Zinconil Syrup", generic: "Zinc Sulfate", company: "Incepta" },
+            { name: "Peptoloc Syrup", generic: "Ranitidine", company: "Incepta" },
+            { name: "Ibu 100mg/5ml (Syrup)", generic: "Ibuprofen", company: "Square" },
+            { name: "Flamet 100mg/5ml (Syrup)", generic: "Ibuprofen", company: "Incepta" },
+            { name: "Pyrantel (Suspension)", generic: "Pyrantel Pamoate", company: "Square" },
+            { name: "Almex 400mg (Tablet/Suspension)", generic: "Albendazole", company: "Square" },
+            { name: "Solas 400mg (Tablet)", generic: "Albendazole", company: "Incepta" },
+            { name: "Inj. Ceftron 1gm", generic: "Ceftriaxone", company: "Incepta" },
+            { name: "Inj. Rocephin 1gm", generic: "Ceftriaxone", company: "Radiant" },
+            { name: "Inj. Pantonix 40mg", generic: "Pantoprazole", company: "Incepta" },
+            { name: "Inj. Sergel 40mg", generic: "Esomeprazole", company: "Healthcare" },
+            { name: "Inj. Omep 40mg", generic: "Omeprazole", company: "Square" },
+            { name: "Inj. Dexa 5mg", generic: "Dexamethasone", company: "Incepta" },
+            { name: "Inj. Hydrocort 100mg", generic: "Hydrocortisone", company: "Incepta" },
+            { name: "Inj. Diclofen 75mg", generic: "Diclofenac Sodium", company: "Incepta" },
+            { name: "Inj. Tramal 100mg", generic: "Tramadol", company: "Radiant" },
+            { name: "Inj. Lasix 20mg", generic: "Furosemide", company: "Sanofi" },
+            { name: "Nidocard (Ointment)", generic: "Nitroglycerin", company: "Incepta" },
+            { name: "Burnsil (Cream)", generic: "Silver Sulfadiazine", company: "Incepta" },
+            { name: "Burnna (Cream)", generic: "Silver Sulfadiazine", company: "Square" },
+            { name: "Fusid (Ointment)", generic: "Fusidic Acid", company: "Incepta" },
+            { name: "Fusi (Cream)", generic: "Fusidic Acid", company: "Square" },
+            { name: "Mupicin (Ointment)", generic: "Mupirocin", company: "Incepta" },
+            { name: "Bactrocin (Ointment)", generic: "Mupirocin", company: "Square" },
+            { name: "Scabo (Lotion)", generic: "Permethrin", company: "Incepta" },
+            { name: "Lomex (Cream)", generic: "Luliconazole", company: "Incepta" },
+            { name: "Lipigel 10mg (Tablet)", generic: "Atorvastatin", company: "Incepta" },
+            { name: "Lipirex 10mg (Tablet)", generic: "Atorvastatin", company: "Square" },
+            { name: "Rosu 10mg (Tablet)", generic: "Rosuvastatin", company: "Square" },
+            { name: "Nidocard 2.6 (Tablet)", generic: "Nitroglycerin", company: "Incepta" },
+            { name: "Monocard 20mg (Tablet)", generic: "Isosorbide Mononitrate", company: "Incepta" },
+            { name: "Procap 6.25mg (Tablet)", generic: "Carvedilol", company: "Incepta" },
+            { name: "Dilatrend 6.25mg (Tablet)", generic: "Carvedilol", company: "Radiant" },
+            { name: "Warf 5mg (Tablet)", generic: "Warfarin", company: "Incepta" },
+            { name: "Seroten 10mg (Tablet)", generic: "Amitriptyline", company: "Incepta" },
+            { name: "Tryptin 10mg (Tablet)", generic: "Amitriptyline", company: "Square" },
+            { name: "Nodep 20mg (Tablet)", generic: "Fluoxetine", company: "Incepta" },
+            { name: "Prodep 20mg (Tablet)", generic: "Fluoxetine", company: "Square" },
+            { name: "Zolpid 5mg (Tablet)", generic: "Zolpidem Tartrate", company: "Incepta" },
+            { name: "Hypnofast 7.5mg (Tablet)", generic: "Midazolam", company: "Incepta" },
+            { name: "Dormicum 7.5mg (Tablet)", generic: "Midazolam", company: "Radiant" },
+            { name: "Vitamix (Syrup)", generic: "Vitamin B-Complex", company: "Incepta" },
+            { name: "Ceevit (Tablet)", generic: "Vitamin C", company: "Square" },
+            { name: "Revital Forte (Tablet)", generic: "Multivitamin", company: "Beximco" },
+            { name: "Osteocal D (Tablet)", generic: "Calcium + Vitamin D3", company: "Square" },
+            { name: "Cholera Saline (500ml)", generic: "Saline Fluids", company: "Libra" },
+            { name: "Hartsol (500ml)", generic: "Hartmann's Solution", company: "Libra" },
+            { name: "Dextrose 5% (500ml)", generic: "Dextrose Water", company: "Libra" },
+            { name: "0.9% Normal Saline", generic: "Sodium Chloride", company: "Libra" },
+            { name: "Thyrox 50mcg (Tablet)", generic: "Levothyroxine Sodium", company: "Incepta" },
+            { name: "Thyonorm 50mcg (Tablet)", generic: "Levothyroxine Sodium", company: "Techno" },
+            { name: "Euthyrox 50mcg (Tablet)", generic: "Levothyroxine Sodium", company: "Merck" },
+            { name: "Thyromar 5mg (Tablet)", generic: "Carbimazole", company: "Incepta" },
+            { name: "Metfor 500mg (Tablet)", generic: "Metformin Hydrochloride", company: "Beximco" },
+            { name: "Metfo 850mg (Tablet)", generic: "Metformin Hydrochloride", company: "Incepta" },
+            { name: "Gluconorm 500mg (Tablet)", generic: "Metformin", company: "Square" },
+            { name: "Linaglip 5mg (Tablet)", generic: "Linagliptin", company: "Incepta" },
+            { name: "Lina 5mg (Tablet)", generic: "Linagliptin", company: "Square" },
+            { name: "Sitaplip 100mg (Tablet)", generic: "Sitagliptin", company: "Incepta" },
+            { name: "Amlopin 5mg (Tablet)", generic: "Amlodipine", company: "Incepta" },
+            { name: "Camlodin 10mg (Tablet)", generic: "Amlodipine", company: "Square" },
+            { name: "Amlo 5mg (Tablet)", generic: "Amlodipine", company: "Beximco" },
+            { name: "Bislol 2.5mg (Tablet)", generic: "Bisoprolol Fumarate", company: "Incepta" },
+            { name: "Bisocor 5mg (Tablet)", generic: "Bisoprolol", company: "Renata" },
+            { name: "Cardobis 5mg (Tablet)", generic: "Bisoprolol", company: "Square" },
+            { name: "Olme 20mg (Tablet)", generic: "Olmesartan Medoxomil", company: "Incepta" },
+            { name: "Olmesar 40mg (Tablet)", generic: "Olmesartan", company: "Square" },
+            { name: "Telsar 40mg (Tablet)", generic: "Telmisartan", company: "Incepta" },
+            { name: "Telmi 80mg (Tablet)", generic: "Telmisartan", company: "Square" },
+            { name: "Indever 40mg (Tablet)", generic: "Propranolol Hydrochloride", company: "Incepta" },
+            { name: "Zestril 5mg (Tablet)", generic: "Lisinopril", company: "Radiant" },
+            { name: "Furo 40mg (Tablet)", generic: "Furosemide", company: "Square" },
+            { name: "Frusi 40mg (Tablet)", generic: "Furosemide", company: "Incepta" },
+            { name: "Uritone (Syrup)", generic: "Potassium Citrate", company: "Incepta" },
+            { name: "Alkali (Syrup)", generic: "Potassium Citrate", company: "Square" },
+            { name: "K-Citrate (Syrup)", generic: "Potassium Citrate", company: "Beximco" },
+            { name: "Ketoflam (Tablet)", generic: "Ketosteril Alternative", company: "Incepta" },
+            { name: "Renolog (Tablet)", generic: "Alpha Ketoanalogue", company: "Healthcare" },
+            { name: "Acyclovir 200mg (Tablet)", generic: "Acyclovir", company: "Square" },
+            { name: "Virux 400mg (Tablet)", generic: "Acyclovir", company: "Incepta" },
+            { name: "Zovirax (Ointment)", generic: "Acyclovir", company: "GSK" },
+            { name: "Avir (Cream)", generic: "Acyclovir", company: "Square" },
+            { name: "Ivera 6mg (Tablet)", generic: "Ivermectin", company: "Incepta" },
+            { name: "Scabo 12mg (Tablet)", generic: "Ivermectin", company: "Square" },
+            { name: "Nitox 500mg (Tablet)", generic: "Nitazoxanide", company: "Incepta" },
+            { name: "Zox 500mg (Tablet)", generic: "Nitazoxanide", company: "Square" },
+            { name: "Zox Suspension", generic: "Nitazoxanide", company: "Square" },
+            { name: "Antazol (Nasal Drop)", generic: "Oxymetazoline", company: "Square" },
+            { name: "Xylomet (Nasal Drop)", generic: "Xylometazoline", company: "Incepta" },
+            { name: "Pivale (Nasal Spray)", generic: "Fluticasone Furoate", company: "Incepta" },
+            { name: "Flixonase (Nasal Spray)", generic: "Fluticasone Propionate", company: "GSK" },
+            { name: "T-Steel (Eye Drop)", generic: "Tobramycin + Dexamethasone", company: "Incepta" },
+            { name: "Optachlor (Eye Ointment)", generic: "Chloramphenicol", company: "Square" },
+            { name: "Vigamox (Eye Drop)", generic: "Moxifloxacin", company: "Alcon" },
+            { name: "Simbrinza (Eye Drop)", generic: "Brinzolamide", company: "Alcon" },
+            { name: "Ketorol 10mg (Tablet)", generic: "Ketorolac Tromethamine", company: "Incepta" },
+            { name: "Rolac 10mg (Tablet)", generic: "Ketorolac", company: "Square" },
+            { name: "Torax 10mg (Tablet)", generic: "Ketorolac", company: "Renata" },
+            { name: "Indomet 25mg (Capsule)", generic: "Indomethacin", company: "Incepta" },
+            { name: "Flexi 100mg (Tablet)", generic: "Aceclofenac", company: "Square" },
+            { name: "Aceclofen 100mg (Tablet)", generic: "Aceclofenac", company: "Incepta" },
+            { name: "Reservix 100mg (Tablet)", generic: "Aceclofenac", company: "Healthcare" },
+            { name: "Calbo-G (Tablet)", generic: "Calcium Orotate", company: "Square" },
+            { name: "Orocal (Tablet)", generic: "Calcium Orotate", company: "Incepta" },
+            { name: "Coralcal-DX (Tablet)", generic: "Calcium + Vit D3 (Coral)", company: "Beacon" },
+            { name: "D-Rise 40000 IU (Capsule)", generic: "Vitamin D3", company: "Incepta" },
+            { name: "Jointix (Tablet)", generic: "Glucosamine + Chondroitin", company: "Incepta" },
+            { name: "Cartilage (Tablet)", generic: "Glucosamine", company: "Square" },
+            { name: "Gynpro 200mg (Capsule)", generic: "Progesterone (Micronized)", company: "Renata" },
+            { name: "Geston 25mg (Tablet)", generic: "Allylestrenol", company: "Renata" },
+            { name: "Prenat (Capsule)", generic: "Multivitamin & Mineral", company: "Incepta" },
+            { name: "I-Folic (Tablet)", generic: "Iron + Folic Acid", company: "Square" },
+            { name: "Feosol (Tablet)", generic: "Ferrous Sulfate", company: "Incepta" },
+            { name: "Zif (Capsule)", generic: "Iron + Zinc + Folic Acid", company: "Square" },
+            { name: "Clexane 40mg (Injection)", generic: "Enoxaparin Sodium", company: "Sanofi" },
+            { name: "Cutox 40mg (Injection)", generic: "Enoxaparin", company: "Incepta" },
+            { name: "Oxytocin (Injection)", generic: "Oxytocin", company: "Incepta" },
+            { name: "Misoprost 200mcg (Tablet)", generic: "Misoprostol", company: "Square" },
+            { name: "Zimax Suspension", generic: "Azithromycin", company: "Acme" },
+            { name: "Tricef (Suspension)", generic: "Cefixime", company: "Incepta" },
+            { name: "Cef-3 (Pediatric Drops)", generic: "Cefixime", company: "Square" },
+            { name: "Fluclox (Suspension)", generic: "Flucloxacillin", company: "Incepta" },
+            { name: "Phylopen (Syrup)", generic: "Flucloxacillin", company: "Square" },
+            { name: "Rovamycin (Syrup)", generic: "Spiramycin", company: "Radiant" },
+            { name: "Furocef (Suspension)", generic: "Cefuroxime", company: "Renata" },
+            { name: "Flamet (Suspension)", generic: "Ibuprofen", company: "Incepta" },
+            { name: "Ambrox (Pediatric Drops)", generic: "Ambroxol Hydrochloride", company: "Square" },
+            { name: "Brosol (Syrup)", generic: "Ambroxol", company: "Incepta" },
+            { name: "Acnyl (Gel)", generic: "Adapalene", company: "Incepta" },
+            { name: "Adalene (Cream)", generic: "Adapalene", company: "Square" },
+            { name: "A-Ret 0.025% (Gel)", generic: "Tretinoin", company: "Menarini" },
+            { name: "Clindax (Gel)", generic: "Clindamycin", company: "Incepta" },
+            { name: "Clindex (Gel)", generic: "Clindamycin", company: "Square" },
+            { name: "Pevisone (Cream)", generic: "Econazole + Triamcinolone", company: "Janssen" },
+            { name: "Econate Plus (Cream)", generic: "Econazole + Triamcinolone", company: "Square" },
+            { name: "Cloben (Cream)", generic: "Clobetasol Propionate", company: "Incepta" },
+            { name: "Dermasol (Ointment)", generic: "Clobetasol", company: "Square" },
+            { name: "Permeth 5% (Cream)", generic: "Permethrin", company: "Square" },
+            { name: "Lulizol (Cream)", generic: "Luliconazole", company: "Incepta" },
+            { name: "Algin 50mg (Tablet)", generic: "Tiemonium Methylsulfate", company: "Renata" },
+            { name: "Viset 50mg (Tablet)", generic: "Tiemonium Methylsulfate", company: "Incepta" },
+            { name: "Tiemo 50mg (Tablet)", generic: "Tiemonium", company: "Square" },
+            { name: "Algin (Injection)", generic: "Tiemonium Methylsulfate", company: "Renata" },
+            { name: "Colicon (Drops)", generic: "Simethicone", company: "Incepta" },
+            { name: "Simex (Drops)", generic: "Simethicone", company: "Square" },
+            { name: "Normat (Tablet)", generic: "Nitazoxanide", company: "Renata" },
+            { name: "Butapan (Tablet)", generic: "Hyoscine Butylbromide", company: "Incepta" },
+            { name: "Hyoscine (Injection)", generic: "Hyoscine Butylbromide", company: "Square" },
+            { name: "0.9% Sodium Chloride (500ml)", generic: "Normal Saline", company: "Libra" },
+            { name: "5% Dextrose (500ml)", generic: "Dextrose Water", company: "Libra" },
+            { name: "Cholera Saline (1000ml)", generic: "ORS/Saline Fluids", company: "Libra" },
+            { name: "Hartman's Solution (500ml)", generic: "Compound Sodium Lactate", company: "Beximco" },
+            { name: "Inj. Adrenaline", generic: "Epinephrine", company: "Incepta" },
+            { name: "Inj. Atropine", generic: "Atropine Sulfate", company: "Square" },
+            { name: "Inj. Calcium Gluconate", generic: "Calcium Gluconate", company: "Incepta" },
+            { name: "Inj. Aminophylline", generic: "Aminophylline", company: "Square" },
+            { name: "Inj. Phenobarbitone", generic: "Phenobarbitone", company: "Incepta" },
+            { name: "Inj. Magnesium Sulfate", generic: "Magnesium Sulfate", company: "Square" },
+            { name: "Xalipro 50mg (Tablet)", generic: "Pregabalin", company: "Incepta" },
+            { name: "Gaba 75mg (Capsule)", generic: "Pregabalin", company: "Square" },
+            { name: "Minalgin (Tablet)", generic: "Metamizole Sodium", company: "Renata" },
+            { name: "Napa Extra (Tablet)", generic: "Paracetamol + Caffeine", company: "Beximco" },
+            { name: "Ace Plus (Tablet)", generic: "Paracetamol + Caffeine", company: "Square" },
+            { name: "Sedil 5mg (Tablet)", generic: "Diazepam", company: "Square" },
+            { name: "Epitra 0.5mg (Tablet)", generic: "Clonazepam", company: "Incepta" }
+        ];
+
+        let activeDose = "1+0+1";
+        let qrcode = null;
+        let toastTimeout = null;
+
+        document.getElementById('current-date').innerText = new Date().toLocaleDateString('en-GB');
+
+        function showToast(message) {
+            const toast = document.getElementById('toast-container');
+            const msgEl = document.getElementById('toast-message');
+            msgEl.innerText = message;
+            
+            toast.classList.remove('opacity-0', 'translate-y-full');
+            
+            if(toastTimeout) clearTimeout(toastTimeout);
+            
+            toastTimeout = setTimeout(() => {
+                toast.classList.add('opacity-0', 'translate-y-full');
+            }, 3000);
+        }
+
+        // ================= NEW TAB FUNCTION =================
+        function switchTab(tabId) {
+            ['tab-rx', 'tab-tools', 'tab-history', 'tab-settings'].forEach(id => {
+                document.getElementById(id).classList.add('hidden');
+                document.getElementById(id).classList.remove('block');
+                document.getElementById('btn-' + id).className = "flex-1 py-3 text-slate-500 hover:bg-slate-50 transition";
+            });
+            
+            document.getElementById(tabId).classList.remove('hidden');
+            document.getElementById(tabId).classList.add('block');
+            document.getElementById('btn-' + tabId).className = "flex-1 py-3 text-blue-600 bg-blue-50 border-b-2 border-blue-600 transition";
+        }
+
+        function switchSection(sectionId) {
+            ['edit-section', 'preview-section', 'dashboard-section'].forEach(id => {
+                const el = document.getElementById(id);
+                el.classList.add('hidden');
+                if(id === 'preview-section') el.classList.remove('block', 'lg:block');
+            });
+            
+            const target = document.getElementById(sectionId);
+            if(sectionId === 'preview-section') {
+                target.classList.remove('hidden');
+                target.classList.add('block');
+            } else {
+                target.classList.remove('hidden');
+            }
+
+            if(sectionId === 'dashboard-section') renderDashboard();
+        }
+
+        function startVoiceTyping(listId, event) {
+            if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+                showToast("আপনার ব্রাউজার ভয়েস টাইপিং সাপোর্ট করে না। Google Chrome ব্যবহার করুন।");
+                return;
+            }
+            
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            const recognition = new SpeechRecognition();
+            recognition.lang = 'en-US'; 
+            recognition.interimResults = false;
+            
+            const list = document.getElementById(listId);
+            const btn = event.currentTarget;
+            const icon = btn.querySelector('i');
+            
+            recognition.onresult = function(e) {
+                const text = e.results[0][0].transcript;
+                const li = document.createElement('li');
+                li.className = "flex items-start gap-1 group animation-fadeIn";
+                li.innerHTML = `
+                    <span class="text-blue-500 mt-0.5">▪</span>
+                    <div contenteditable="true" class="text-slate-700 outline-none flex-1 font-medium min-h-[16px]">${text}</div>
+                    <button onclick="this.parentElement.remove(); saveDraftPrescription();" class="text-red-400 opacity-0 group-hover:opacity-100 transition text-[10px] pl-1"><i class="fa-solid fa-xmark"></i></button>
+                `;
+                list.appendChild(li);
+                saveDraftPrescription();
+            };
+            
+            recognition.onend = function() {
+                icon.classList.remove('recording');
+            };
+            
+            try {
+                recognition.start();
+                icon.classList.add('recording');
+            } catch (err) {
+                showToast("Microphone access denied or already recording.");
+                icon.classList.remove('recording');
+            }
+        }
+
+        function applyTemplate(disease) {
+            const ccList = document.getElementById('cc-list');
+            const medList = document.getElementById('pad-medicine-list');
+            
+            ccList.innerHTML = ''; medList.innerHTML = '';
+
+            const addCC = (text) => {
+                ccList.innerHTML += `<li class="flex items-start gap-1 group animation-fadeIn"><span class="text-blue-500 mt-0.5">▪</span><div contenteditable="true" class="text-slate-700 outline-none flex-1 font-medium">${text}</div><button onclick="this.parentElement.remove();" class="text-red-400 opacity-0 group-hover:opacity-100 transition text-[10px] pl-1"><i class="fa-solid fa-xmark"></i></button></li>`;
+            };
+
+            const addMed = (name, doseBN, duration, instruction) => {
+                medList.innerHTML += `<li class="font-semibold text-slate-900 border-b pb-2 border-dashed border-slate-100 relative group list-none mb-2 hover:bg-slate-50 transition rounded-lg p-1"><div class="flex justify-between items-start"><div class="flex-1"><div class="flex items-center gap-1"><span class="text-blue-900 font-bold text-[15px]">▶</span><span contenteditable="true" class="text-blue-900 font-bold text-[15px] outline-none border-b border-transparent focus:border-blue-300 w-full" onblur="saveDraftPrescription()">${name}</span></div><div class="flex items-center mt-1 pl-4 gap-2 font-mono font-semibold text-xs text-slate-600"><span title="Dose">💊</span><span contenteditable="true" class="outline-none border-b border-transparent focus:border-blue-300 min-w-[50px]" onblur="saveDraftPrescription()">${doseBN}</span><span title="Duration">🗓</span><span contenteditable="true" class="outline-none border-b border-transparent focus:border-blue-300 min-w-[30px]" onblur="saveDraftPrescription()">${duration}</span><span title="Instruction">🕒</span><span contenteditable="true" class="outline-none border-b border-transparent focus:border-blue-300 min-w-[50px] flex-1" onblur="saveDraftPrescription()">${instruction}</span></div></div><button onclick="this.parentElement.parentElement.remove(); saveDraftPrescription(); generateQR();" class="text-red-500 hover:text-red-700 bg-red-50 hover:bg-red-100 p-1.5 rounded-md text-xs opacity-0 group-hover:opacity-100 transition ml-2 shrink-0"><i class="fa-solid fa-trash"></i></button></div></li>`;
+            };
+
+          if (disease === 'viral_fever') {
+    addCC("Fever for 3 days"); addCC("Body ache");
+    addMed("Napa Extend 665mg (Paracetamol)", translateDoseToBengali("1+1+1"), "৩ দিন", "খাবারের পরে");
+    addMed("Alatrol 10mg (Cetirizine)", translateDoseToBengali("0+0+1"), "৫ দিন", "খাবারের পরে");
+} else if (disease === 'gastritis' || disease === 'gerd') {
+    addCC("Epigastric burning pain"); addCC("Nausea"); addCC("Heartburn");
+    addMed("Seclo 20mg (Omeprazole)", translateDoseToBengali("1+0+1"), "১৫ দিন", "খাবারের আগে");
+    addMed("Motigut 10mg (Domperidone)", translateDoseToBengali("1+0+1"), "১০ দিন", "খাবারের আগে");
+} else if (disease === 'uti') {
+    addCC("Burning sensation during micturition"); addCC("Lower abdominal pain");
+    addMed("Ciprocin 500mg (Ciprofloxacin)", translateDoseToBengali("1+0+1"), "৭ দিন", "খাবারের পরে");
+    addMed("Seclo 20mg (Omeprazole)", translateDoseToBengali("1+0+1"), "৭ দিন", "খাবারের আগে");
+    addMed("Syrup Urocol", "২ চামচ করে", "৭ দিন", "১ গ্লাস পানিতে মিশিয়ে ৩ বেলা খাবেন");
+} else if (disease === 'diarrhea') {
+    addCC("Loose motion 5-6 times/day"); addCC("Weakness");
+    addMed("Orsaline-N (ORS)", "১ প্যাকেট আধা লিটার পানিতে", "চলবে", "প্রতিবার পাতলা পায়খানার পর");
+    addMed("Filmet 400mg (Metronidazole)", translateDoseToBengali("1+1+1"), "৫ দিন", "খাবারের পরে");
+    addMed("Emodil 2mg (Loperamide)", translateDoseToBengali("1+0+1"), "৩ দিন", "খাবারের পরে (পাতলা পায়খানা বন্ধ হলে খাবেন না)");
+} else if (disease === 'common_cold' || disease === 'allergic_rhinitis') {
+    addCC("Runny nose"); addCC("Sneezing"); addCC("Mild fever");
+    addMed("Fexo 120mg (Fexofenadine)", translateDoseToBengali("0+0+1"), "৭ দিন", "খাবারের পরে");
+    addMed("Napa 500mg (Paracetamol)", translateDoseToBengali("1+1+1"), "৩ দিন", "জ্বর ও ব্যথা থাকলে খাবারের পরে");
+} else if (disease === 'acute_tonsillitis') {
+    addCC("Sore throat"); addCC("Pain during swallowing"); addCC("Fever");
+    addMed("Cef-3 200mg (Cefixime)", translateDoseToBengali("1+0+1"), "৭ দিন", "খাবারের পরে");
+    addMed("Napa Extend 665mg (Paracetamol)", translateDoseToBengali("1+1+1"), "৫ দিন", "খাবারের পরে");
+    addMed("Viodin 1% Gargle (Povidone Iodine)", "অর্ধেক পানি + অর্ধেক ওষুধ", "৭ দিন", "দিনে ৩-৪ বার গড়গড়া করবেন");
+} else if (disease === 'asthma_copd') {
+    addCC("Shortness of breath"); addCC("Cough and wheezing");
+    addMed("Inhaler Windel Plus", "২ চাপ করে", "চলবে", "দিনে ৩ বার");
+    addMed("Monas 10mg (Montelukast)", translateDoseToBengali("0+0+1"), "১ মাস", "রাতে খাবারের পরে");
+    addMed("Doxiva 400mg (Doxofylline)", translateDoseToBengali("1+0+1"), "১৪ দিন", "খাবারের পরে");
+} else if (disease === 'hypertension') {
+    addCC("Headache"); addCC("Palpitation / Asymptomatic");
+    addMed("Camlosart 5/50 (Amlodipine + Losartan)", translateDoseToBengali("0+0+1"), "চলবে", "রাতে খাবারের পরে");
+    addMed("Check BP every week and reduce salt intake", "", "", "");
+} else if (disease === 'migraine' || disease === 'tension_headache') {
+    addCC("Throbbing headache"); addCC("Nausea");
+    addMed("Tufnil 200mg (Tolfenamic Acid)", translateDoseToBengali("1+0+1"), "৩ দিন", "মাথাব্যথা থাকলে খাবারের পরে");
+    addMed("Motigut 10mg (Domperidone)", translateDoseToBengali("1+0+1"), "৩ দিন", "খাবারের আগে");
+    addMed("Amit 10mg (Amitriptyline)", translateDoseToBengali("0+0+1"), "১ মাস", "রাতে খাবারের পরে");
+} else if (disease === 'dysmenorrhea') {
+    addCC("Lower abdominal pain during menstruation");
+    addMed("Algin 50mg (Tiemonium Methylsulfate)", translateDoseToBengali("1+1+1"), "৩ দিন", "ব্যথা থাকলে খাবারের পরে");
+    addMed("Mefenamic Acid 500mg", translateDoseToBengali("1+0+1"), "৩ দিন", "খাবারের পরে");
+} else if (disease === 'low_back_pain' || disease === 'body_ache') {
+    addCC("Pain in lower back"); addCC("Restricted movement");
+    addMed("Tory 90mg (Etoricoxib)", translateDoseToBengali("0+0+1"), "৭ দিন", "খাবারের পরে (ভরা পেটে)");
+    addMed("Myolax 50mg (Eperisone)", translateDoseToBengali("1+0+1"), "৭ দিন", "খাবারের পরে");
+    addMed("Seclo 20mg (Omeprazole)", translateDoseToBengali("1+0+1"), "৭ দিন", "খাবারের আগে");
+} else if (disease === 'osteoarthritis') {
+    addCC("Knee joint pain"); addCC("Difficulty in walking");
+    addMed("Naprox 500mg (Naproxen)", translateDoseToBengali("1+0+1"), "১০ দিন", "খাবারের পরে");
+    addMed("Seclo 20mg (Omeprazole)", translateDoseToBengali("1+0+1"), "১০ দিন", "খাবারের আগে");
+    addMed("Carticare (Glucosamine + Chondroitin)", translateDoseToBengali("1+0+1"), "১ মাস", "খাবারের পরে");
+} else if (disease === 'scabies') {
+    addCC("Generalized itching, worse at night"); addCC("Skin lesions");
+    addMed("Lice-Scab 5% Cream (Permethrin)", "পুরো শরীরে মাখবেন", "১ বার", "গলা থেকে পা পর্যন্ত মেখে ৮-১২ ঘণ্টা পর গোসল করবেন। ৭ দিন পর আবার দিবেন");
+    addMed("Alatrol 10mg (Cetirizine)", translateDoseToBengali("0+0+1"), "১৪ দিন", "খাবারের পরে");
+} else if (disease === 'fungal_infection') {
+    addCC("Itchy annular skin lesions"); addCC("Redness");
+    addMed("Lucan-R 150mg (Fluconazole)", "১টি করে ক্যাপসুল", "৪ সপ্তাহ", "প্রতি সপ্তাহে ১ দিন খাবেন");
+    addMed("Terbinafine 1% Cream", "আক্রান্ত স্থানে", "২ সপ্তাহ", "দিনে ২ বার লাগাবেন");
+    addMed("Alatrol 10mg (Cetirizine)", translateDoseToBengali("0+0+1"), "১০ দিন", "খাবারের পরে");
+} else if (disease === 'typhoid_fever') {
+    addCC("High grade continuous fever"); addCC("Headache and weakness");
+    addMed("Cef-3 200mg (Cefixime)", translateDoseToBengali("1+0+1"), "১৪ দিন", "খাবারের পরে");
+    addMed("Napa 500mg (Paracetamol)", translateDoseToBengali("1+1+1"), "চলবে", "জ্বর থাকলে খাবারের পরে");
+} else if (disease === 'dengue_fever') {
+    addCC("High grade fever"); addCC("Severe body ache"); addCC("Retro-orbital pain");
+    addMed("Napa 500mg (Paracetamol)", translateDoseToBengali("1+1+1+1"), "চলবে", "জ্বর ও ব্যথা থাকলে খাবারের পরে");
+    addMed("Orsaline-N (ORS) & Plenty of fluids", "প্রচুর পানি, ডাবের পানি, জুস খাবেন", "চলবে", "");
+    addMed("Warning: Avoid NSAIDs (No Aspirin/Ibuprofen)", "", "", "");
+} else if (disease === 'anemia' || disease === 'weakness') {
+    addCC("Generalized weakness"); addCC("Pallor and fatigue");
+    addMed("Ipec-Plus / Zif CI", translateDoseToBengali("1+0+0"), "১ মাস", "দুপুরে খাবারের পরে");
+    addMed("Bextram Gold (Multivitamin)", translateDoseToBengali("0+0+1"), "১ মাস", "রাতে খাবারের পরে");
+} else if (disease === 'constipation') {
+    addCC("Infrequent bowel movement"); addCC("Hard stool");
+    addMed("Avolac / Osmolax Syrup", "২ চামচ করে", "৭ দিন", "রাতে ঘুমানোর আগে");
+    addMed("Fybogel (Ispaghula Husk)", "১ স্যাসেট করে", "১ মাস", "১ গ্লাস পানিতে মিশিয়ে রাতে খাবেন");
+} else if (disease === 'hemorrhoids') {
+    addCC("Painful defecation"); addCC("Bleeding per rectum");
+    addMed("Normanal 500mg (Diosmin)", translateDoseToBengali("1+0+1"), "১ মাস", "খাবারের পরে");
+    addMed("Xylocain 2% Jelly", "পায়খানার রাস্তায় লাগাবেন", "চলবে", "পায়খানার আগে ও পরে");
+    addMed("Avolac Syrup", "২ চামচ করে", "৭ দিন", "রাতে ঘুমানোর আগে");
+} else if (disease === 'insomnia' || disease === 'anxiety') {
+    addCC("Difficulty falling asleep"); addCC("Palpitation");
+    addMed("Rivotril 0.5mg (Clonazepam)", translateDoseToBengali("0+0+1"), "১৪ দিন", "রাতে ঘুমানোর আধা ঘণ্টা আগে");
+} else if (disease === 'toothache' || disease === 'dental_caries') {
+    addCC("Severe toothache"); addCC("Swelling of gums");
+    addMed("Rolac 10mg (Ketorolac)", translateDoseToBengali("1+0+1"), "৫ দিন", "ব্যথা থাকলে ভরা পেটে");
+    addMed("Moxacil 500mg (Amoxicillin)", translateDoseToBengali("1+1+1"), "৭ দিন", "খাবারের পরে");
+    addMed("Filmet 400mg (Metronidazole)", translateDoseToBengali("1+1+1"), "৭ দিন", "খাবারের পরে");
+} else if (disease === 'vertigo') {
+    addCC("Dizziness"); addCC("Spinning sensation");
+    addMed("Serc 16mg (Betahistine)", translateDoseToBengali("1+0+1"), "১৪ দিন", "খাবারের পরে");
+    addMed("Stemetil 5mg (Prochlorperazine)", translateDoseToBengali("1+0+1"), "৫ দিন", "মাথা ঘোরা বেশি থাকলে খাবারের পরে");
+} else if (disease === 'amoebic_dysentery') {
+    addCC("Mucoid stool with blood"); addCC("Abdominal cramps");
+    addMed("Filmet 400mg (Metronidazole)", translateDoseToBengali("1+1+1"), "৫ দিন", "খাবারের পরে");
+    addMed("Algin 50mg (Tiemonium Methylsulfate)", translateDoseToBengali("1+0+1"), "৩ দিন", "পেটে ব্যথা থাকলে");
+} else if (disease === 'worm_infestation') {
+    addCC("Anal itching"); addCC("Abdominal discomfort");
+    addMed("Almex 400mg (Albendazole)", "১টি ট্যাবলেট", "১ দিন", "রাতে চিবিয়ে খাবেন (পরিবারের সবাই খাবে)");
+    addMed("Almex 400mg (Albendazole)", "১টি ট্যাবলেট", "১ দিন", "ঠিক ৭ দিন পর আরেকটি খাবেন");
+} else if (disease === 'urticaria' || disease === 'allergy') {
+    addCC("Itchy red wheals all over the body"); addCC("Severe itching");
+    addMed("Deslor 5mg (Desloratadine)", translateDoseToBengali("1+0+0"), "১০ দিন", "খাবারের পরে");
+    addMed("Calamine Lotion", "আক্রান্ত স্থানে লাগাবেন", "৫ দিন", "দিনে ২ বার");
+} else if (disease === 'conjunctivitis') {
+    addCC("Redness of eye"); addCC("Watery discharge");
+    addMed("Chloramphenicol Eye Drop", "২ ফোঁটা করে", "৭ দিন", "উভয় চোখে দিনে ৩-৪ বার");
+    addMed("Napa 500mg (Paracetamol)", translateDoseToBengali("1+1+1"), "৩ দিন", "ব্যথা থাকলে");
+} else if (disease === 'otitis_media') {
+    addCC("Ear ache"); addCC("Ear discharge");
+    addMed("Cef-3 200mg (Cefixime)", translateDoseToBengali("1+0+1"), "৭ দিন", "খাবারের পরে");
+    addMed("Napa 500mg (Paracetamol)", translateDoseToBengali("1+1+1"), "৫ দিন", "ব্যথা থাকলে");
+    addMed("Antazol Nasal Drop", "২ ফোঁটা করে", "৫ দিন", "উভয় নাকে দিনে ২ বার");
+} else if (disease === 'acute_bronchitis') {
+    addCC("Cough with thick sputum"); addCC("Chest discomfort");
+    addMed("Zithrin 500mg (Azithromycin)", translateDoseToBengali("1+0+0"), "৫ দিন", "খাবারের ১ ঘণ্টা আগে বা ২ ঘণ্টা পরে");
+    addMed("Ambrox Syrup (Ambroxol)", "২ চামচ করে", "৭ দিন", "দিনে ৩ বার খাবারের পরে");
+} else if (disease === 'acne_vulgaris') {
+    addCC("Pimples on face"); addCC("Oily skin");
+    addMed("Doxycap 100mg (Doxycycline)", translateDoseToBengali("1+0+1"), "১৪ দিন", "খাবারের পরে");
+    addMed("Acnesol 1% Gel (Clindamycin)", "ব্রণের উপর লাগাবেন", "১ মাস", "রাতে ঘুমানোর আগে");
+} else if (disease === 'minor_wound' || disease === 'cut_injury') {
+    addCC("Cut injury"); addCC("Bleeding");
+    addMed("Fluclox 500mg (Flucloxacillin)", translateDoseToBengali("1+1+1+1"), "৭ দিন", "খাবারের ১ ঘণ্টা আগে");
+    addMed("Napa Extend 665mg", translateDoseToBengali("1+1+1"), "৩ দিন", "ব্যথা থাকলে খাবারের পরে");
+    addMed("Viodin Ointment (Povidone Iodine)", "ক্ষত স্থানে লাগাবেন", "৭ দিন", "ড্রেসিং করার সময়");
+} else if (disease === 'peptic_ulcer') {
+    addCC("Severe epigastric pain"); addCC("Relieved/Aggravated by food");
+    addMed("Dexlansoprazole 30mg", translateDoseToBengali("1+0+0"), "১ মাস", "সকালে খাবারের আগে");
+    addMed("Sucralfate Suspension", "২ চামচ করে", "১৪ দিন", "খাবারের ১ ঘণ্টা আগে (দিনে ৩ বার)");
+} else if (disease === 'vomiting' || disease === 'food_poisoning') {
+    addCC("Frequent vomiting"); addCC("Abdominal discomfort");
+    addMed("Emeset 8mg (Ondansetron)", translateDoseToBengali("1+0+1"), "৩ দিন", "খাবারের আগে");
+    addMed("Orsaline-N", "১ প্যাকেট", "চলবে", "প্রতিবার বমির পর");
+}
+
+            updatePrescription();
+            showToast("✅ টেমপ্লেট সফলভাবে অ্যাপ্লাই করা হয়েছে!");
+        }
+
+        function translateDoseToBengali(doseInput) {
+            const map = {
+                "1+0+1": "সকালে ১টি - রাতে ১টি",
+                "1+1+1": "সকালে ১টি - দুপুরে ১টি - রাতে ১টি",
+                "1+0+0": "শুধু সকালে ১টি",
+                "0+0+1": "শুধু রাতে ১টি",
+                "0+1+0": "শুধু দুপুরে ১টি",
+                "2+0+2": "সকালে ২টি - রাতে ২টি",
+                "1+1+1+1": "সকালে ১টি - দুপুরে ১টি - বিকালে ১টি - রাতে ১টি"
+            };
+            return map[doseInput] || doseInput; 
+        }
+
+        function updatePrescription() {
+            document.getElementById('pad-doc-name').innerText = document.getElementById('doc-name').value;
+            document.getElementById('pad-doc-degrees').innerText = document.getElementById('doc-degrees').value;
+            document.getElementById('pad-doc-chamber').innerText = document.getElementById('doc-chamber').value;
+            
+            document.getElementById('pad-p-name').innerText = document.getElementById('p-name').value || '..........';
+            document.getElementById('pad-p-age').innerText = document.getElementById('p-age').value || '--';
+            document.getElementById('pad-p-weight').innerText = document.getElementById('p-weight').value || '--';
+            document.getElementById('pad-p-gender').innerText = document.getElementById('p-gender').value;
+
+            saveDoctorProfile();
+            saveDraftPrescription();
+            generateQR();
+        }
+
+        function changeTemplate(className) {
+            const pad = document.getElementById('prescription-pad');
+            pad.className = `bg-white p-8 rounded-none shadow-lg min-h-[285mm] flex flex-col justify-between ${className}`;
+            saveDoctorProfile();
+        }
+
+        function searchMedicine(query) {
+            const box = document.getElementById('suggestion-box');
+            if (!query) { box.classList.add('hidden'); return; }
+            
+            let filtered = medicineDB.filter(d => 
+                d.name.toLowerCase().includes(query.toLowerCase()) || 
+                d.generic.toLowerCase().includes(query.toLowerCase())
+            );
+            
+            if(filtered.length === 0) { box.classList.add('hidden'); return; }
+            
+            box.innerHTML = filtered.map(d => 
+                `<div onclick="selectDrug('${d.name}', '${d.generic}', '${d.company}')" class="p-3 border-b hover:bg-slate-50 cursor-pointer text-xs transition">
+                    <span class="font-bold text-blue-700">${d.name}</span> 
+                    <span class="text-slate-500">(${d.company})</span> - 
+                    <span class="italic text-slate-600">${d.generic}</span>
+                </div>`
+            ).join('');
+            
+            box.classList.remove('hidden');
+        }
+
+        function selectDrug(name, generic, company) {
+            document.getElementById('drug-search').value = `${name}`;
+            document.getElementById('suggestion-box').classList.add('hidden');
+        }
+
+        function setDosage(dose, btn) {
+            activeDose = dose;
+            document.getElementById('custom-dose').value = '';
+            document.querySelectorAll('.dose-btn').forEach(b => b.classList.replace('bg-blue-500', 'bg-slate-200'));
+            document.querySelectorAll('.dose-btn').forEach(b => b.classList.remove('text-white'));
+            btn.classList.replace('bg-slate-200', 'bg-blue-500');
+            btn.classList.add('text-white');
+        }
+
+        function clearDoseSelection() {
+            document.querySelectorAll('.dose-btn').forEach(b => b.classList.replace('bg-blue-500', 'bg-slate-200'));
+            document.querySelectorAll('.dose-btn').forEach(b => b.classList.remove('text-white'));
+        }
+
+        // ================= EDITABLE DRUG FUNCTION =================
+        function addMedicineToPad() {
+            const searchVal = document.getElementById('drug-search').value;
+            if(!searchVal) return;
+
+            let finalDose = document.getElementById('custom-dose').value || activeDose;
+            let finalDoseBN = translateDoseToBengali(finalDose); 
+            
+            let duration = document.getElementById('duration').value;
+            let instruction = document.getElementById('instruction').value;
+
+            const list = document.getElementById('pad-medicine-list');
+            const item = document.createElement('li');
+            item.className = "font-semibold text-slate-900 border-b pb-2 border-dashed border-slate-100 relative group list-none mb-2 hover:bg-slate-50 transition rounded-lg p-1";
+            
+            item.innerHTML = `
+                <div class="flex justify-between items-start">
+                    <div class="flex-1">
+                        <div class="flex items-center gap-1">
+                            <span class="text-blue-900 font-bold text-[15px]">▶</span>
+                            <span contenteditable="true" class="text-blue-900 font-bold text-[15px] outline-none border-b border-transparent focus:border-blue-300 w-full" onblur="saveDraftPrescription()">${searchVal}</span>
+                        </div>
+                        <div class="flex items-center mt-1 pl-4 gap-2 font-mono font-semibold text-xs text-slate-600">
+                            <span title="Dose">💊</span>
+                            <span contenteditable="true" class="outline-none border-b border-transparent focus:border-blue-300 min-w-[50px]" onblur="saveDraftPrescription()">${finalDoseBN}</span>
+                            <span title="Duration">🗓</span>
+                            <span contenteditable="true" class="outline-none border-b border-transparent focus:border-blue-300 min-w-[30px]" onblur="saveDraftPrescription()">${duration}</span>
+                            <span title="Instruction">🕒</span>
+                            <span contenteditable="true" class="outline-none border-b border-transparent focus:border-blue-300 min-w-[50px] flex-1" onblur="saveDraftPrescription()">${instruction}</span>
+                        </div>
+                    </div>
+                    <button onclick="this.parentElement.parentElement.remove(); saveDraftPrescription(); generateQR();" class="text-red-500 hover:text-red-700 bg-red-50 hover:bg-red-100 p-1.5 rounded-md text-xs opacity-0 group-hover:opacity-100 transition ml-2 shrink-0">
+                        <i class="fa-solid fa-trash"></i>
+                    </button>
+                </div>
+            `;
+            
+            list.appendChild(item);
+            document.getElementById('drug-search').value = '';
+            document.getElementById('custom-dose').value = '';
+            
+            saveDraftPrescription();
+            generateQR();
+        }
+
+        function addMetadataRow(listId) {
+            const list = document.getElementById(listId);
+            const li = document.createElement('li');
+            
+            if (listId === 'cc-list') {
+                li.className = "flex items-start gap-1 group animation-fadeIn";
+                li.innerHTML = `
+                    <span class="text-blue-500 mt-0.5">▪</span>
+                    <div contenteditable="true" class="text-slate-700 outline-none flex-1 font-medium min-h-[16px] focus:bg-slate-50 rounded px-1" oninput="saveDraftPrescription()"></div>
+                    <button onclick="this.parentElement.remove(); saveDraftPrescription();" class="text-red-400 opacity-0 group-hover:opacity-100 transition text-[10px] pl-1"><i class="fa-solid fa-xmark"></i></button>
+                `;
+            } else {
+                li.className = "flex items-center gap-1 group animation-fadeIn";
+                li.innerHTML = `
+                    <span contenteditable="true" class="text-slate-500 font-semibold w-12 text-[11px] outline-none border-b border-dashed border-slate-200 focus:border-blue-500" oninput="saveDraftPrescription()">Custom:</span>
+                    <div contenteditable="true" class="text-slate-700 outline-none border-b border-transparent hover:border-slate-300 focus:border-blue-500 flex-1 font-medium px-1" oninput="saveDraftPrescription()"></div>
+                    <button onclick="this.parentElement.remove(); saveDraftPrescription();" class="text-red-400 opacity-0 group-hover:opacity-100 transition text-[10px] pl-1"><i class="fa-solid fa-xmark"></i></button>
+                `;
+            }
+            
+            list.appendChild(li);
+            saveDraftPrescription();
+            
+            const editableDiv = li.querySelector('div[contenteditable="true"]');
+            if(editableDiv) editableDiv.focus();
+        }
+
+        function generateQR() {
+            const container = document.getElementById('qrcode-container');
+            container.innerHTML = ""; 
+            const pName = document.getElementById('p-name').value || 'Patient';
+            const date = document.getElementById('current-date').innerText;
+            const docName = document.getElementById('doc-name').value;
+            
+            const qrText = `RxPro Auth\nDoc: ${docName}\nPatient: ${pName}\nDate: ${date}\nStatus: Verified`;
+            
+            if (typeof QRCode !== 'undefined') {
+                qrcode = new QRCode(container, {
+                    text: qrText,
+                    width: 64,
+                    height: 64,
+                    colorDark : "#1e3a8a",
+                    colorLight : "#ffffff",
+                    correctLevel : QRCode.CorrectLevel.L
+                });
+            }
+        }
+	
+function printPrescription() {
+    if (document.getElementById('p-phone').value) {
+        saveCurrentRxToLog();
+    }
+    window.print(); // এটি ব্রাউজারের নেটিভ প্রিন্ট উইন্ডো আনবে
+}
+
+        function shareWhatsApp() {
+            let patientName = document.getElementById('p-name').value || 'Patient';
+            let message = `Hi, This is a digital prescription for ${patientName} generated by RxPro.`;
+            window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(message)}`, '_blank');
+        }
+
+        // ১. সম্পূর্ণ ড্রাগ ডাটাবেজ (HTML অপশনের সাথে মিল রেখে)
+        const pedDrugDatabase = {
+            // Antipyretics & Analgesics (জ্বর ও ব্যথা)
+            "para_drop": { dailyDose: 60, conc: 80, freq: 4, unit: "ml (ড্রপস)" },
+            "para_120": { dailyDose: 60, conc: 24, freq: 4, unit: "ml" },
+            "para_250": { dailyDose: 60, conc: 50, freq: 4, unit: "ml" },
+            "ibu_100": { dailyDose: 30, conc: 20, freq: 3, unit: "ml" },
+            "dexibu_100": { dailyDose: 18.75, conc: 20, freq: 3, unit: "ml" },
+            "mefenamic_50": { dailyDose: 19.5, conc: 10, freq: 3, unit: "ml" },
+
+            // Antibiotics - Penicillins
+            "amox_drop": { dailyDose: 45, conc: 100, freq: 3, unit: "ml" },
+            "amox_125": { dailyDose: 45, conc: 25, freq: 3, unit: "ml" },
+            "amox_250": { dailyDose: 45, conc: 50, freq: 3, unit: "ml" },
+            "coamox_156": { dailyDose: 30, conc: 31.25, freq: 3, unit: "ml" },
+            "coamox_228": { dailyDose: 45, conc: 45.7, freq: 2, unit: "ml" },
+            "coamox_312": { dailyDose: 30, conc: 62.5, freq: 3, unit: "ml" },
+            "coamox_457": { dailyDose: 45, conc: 91.4, freq: 2, unit: "ml" },
+            "fluclox_125": { dailyDose: 50, conc: 25, freq: 4, unit: "ml" },
+
+            // Antibiotics - Cephalosporins
+            "cefix_drop": { dailyDose: 8, conc: 25, freq: 2, unit: "ml" },
+            "cefix_100": { dailyDose: 8, conc: 20, freq: 2, unit: "ml" },
+            "cefix_200": { dailyDose: 8, conc: 40, freq: 2, unit: "ml" },
+            "cefurox_125": { dailyDose: 30, conc: 25, freq: 2, unit: "ml" },
+            "cefpod_40": { dailyDose: 8, conc: 8, freq: 2, unit: "ml" },
+            "cephrad_125": { dailyDose: 50, conc: 25, freq: 4, unit: "ml" },
+            "cefaclor_125": { dailyDose: 20, conc: 25, freq: 3, unit: "ml" },
+
+            // Antibiotics - Macrolides & Others
+            "azithro_15": { dailyDose: 10, conc: 15, freq: 1, unit: "ml" },
+            "azithro_200": { dailyDose: 10, conc: 40, freq: 1, unit: "ml" },
+            "clarithro_125": { dailyDose: 15, conc: 25, freq: 2, unit: "ml" },
+            "cotrim": { dailyDose: 8, conc: 8, freq: 2, unit: "ml" },
+            "metro_200": { dailyDose: 30, conc: 40, freq: 3, unit: "ml" },
+            "cipro_250": { dailyDose: 20, conc: 50, freq: 2, unit: "ml" },
+            "nitro_25": { dailyDose: 5, conc: 5, freq: 4, unit: "ml" },
+
+            // Antihistamines
+            "cetirizine": { dailyDose: 0.25, conc: 1, freq: 1, unit: "ml" },
+            "levocet": { dailyDose: 0.125, conc: 0.5, freq: 1, unit: "ml" },
+            "fexo_30": { dailyDose: 3, conc: 6, freq: 2, unit: "ml" },
+            "deslora": { dailyDose: 0.15, conc: 0.5, freq: 1, unit: "ml" },
+            "lora_5": { dailyDose: 0.2, conc: 1, freq: 1, unit: "ml" },
+            "keto_1": { dailyDose: 0.1, conc: 0.2, freq: 2, unit: "ml" },
+
+            // Asthma & Bronchodilators
+            "salbutamol_2": { dailyDose: 0.45, conc: 0.4, freq: 3, unit: "ml" },
+            "levosal_1": { dailyDose: 0.15, conc: 0.2, freq: 3, unit: "ml" },
+            "montelukast_4": { dailyDose: 0.2, conc: 4, freq: 1, unit: "টি (Granules/Tab)" },
+            "doxofylline_100": { dailyDose: 12, conc: 20, freq: 2, unit: "ml" },
+
+            // Cough & Cold
+            "ambrox_drop": { dailyDose: 1.2, conc: 6, freq: 3, unit: "ml (ড্রপস)" },
+            "ambrox_15": { dailyDose: 1.2, conc: 3, freq: 3, unit: "ml" },
+            "bromhex_4": { dailyDose: 0.3, conc: 0.8, freq: 3, unit: "ml" },
+            "butamirate": { dailyDose: 1.5, conc: 1.5, freq: 3, unit: "ml" },
+            "dextro_10": { dailyDose: 1, conc: 2, freq: 3, unit: "ml" },
+
+            // Antiemetics
+            "domp_drop": { dailyDose: 0.6, conc: 5, freq: 3, unit: "ml (ড্রপস)" },
+            "domp_5": { dailyDose: 0.6, conc: 1, freq: 3, unit: "ml" },
+            "ondan_2": { dailyDose: 0.45, conc: 0.4, freq: 3, unit: "ml" },
+
+            // Antispasmodic
+            "tiemonium": { dailyDose: 3, conc: 2, freq: 3, unit: "ml" },
+            "dicyclo_10": { dailyDose: 1, conc: 2, freq: 3, unit: "ml" },
+
+            // Anti-ulcerants / PPIs
+            "omep_10": { dailyDose: 1, conc: 2, freq: 1, unit: "ml" },
+            "esomep_20": { dailyDose: 1, conc: 20, freq: 1, unit: "টি (Sachet)" },
+            "lansop_15": { dailyDose: 1, conc: 15, freq: 1, unit: "টি (ODT)" },
+
+            // Anti-diarrheal & Probiotics
+            "zinc_20": { dailyDose: 2, conc: 4, freq: 1, unit: "ml" },
+            "nita_100": { dailyDose: 15, conc: 20, freq: 2, unit: "ml" },
+            "racecadotril": { dailyDose: 4.5, conc: 10, freq: 3, unit: "টি (Sachet - 10mg)" },
+            "bacillus": { fixedDose: "১ ভায়াল", freq: 2, unit: "" },
+
+            // Anthelmintics
+            "alben_200": { fixedDose: "10 ml (400mg) সিঙ্গল ডোজ", freq: 1, unit: "" },
+            "meben_100": { fixedDose: "5 ml (100mg) দিনে ২ বার (৩ দিন)", freq: 2, unit: "" },
+            "ivermectin": { dailyDose: 0.2, conc: 3, freq: 1, unit: "টি (Tab)" },
+
+            // Steroids
+            "prednisolone_5": { dailyDose: 1.5, conc: 1, freq: 2, unit: "ml" },
+            "dexa_0.5": { dailyDose: 0.3, conc: 0.1, freq: 2, unit: "ml" },
+
+            // Anticonvulsants
+            "valproate_200": { dailyDose: 20, conc: 40, freq: 2, unit: "ml" },
+            "levetira_100": { dailyDose: 20, conc: 100, freq: 2, unit: "ml" },
+            "phenobar_15": { dailyDose: 5, conc: 3, freq: 2, unit: "ml" },
+
+            // Antifungals & Antivirals
+            "flucon_50": { dailyDose: 6, conc: 10, freq: 1, unit: "ml" },
+            "nystatin_drop": { fixedDose: "1-2 ml", freq: 4, unit: "" },
+            "acyclovir_200": { dailyDose: 80, conc: 40, freq: 4, unit: "ml" }
+        };
+
+        // ২. ইউনিভার্সাল ক্যালকুলেশন ফাংশন
+        function calculatePediatricDose() {
+            const weight = parseFloat(document.getElementById('p-weight').value);
+            const drugKey = document.getElementById('ped-drug').value;
+            const resBox = document.getElementById('ped-result');
+
+            if (!weight || weight <= 0) {
+                showToast("রোগীর সঠিক ওজন (kg) দিন!");
+                return;
+            }
+
+            const drug = pedDrugDatabase[drugKey];
+            
+            if (drug) {
+                if (drug.fixedDose) {
+                    resBox.innerHTML = `
+                        <div class="p-2 bg-indigo-50 rounded-lg">
+                            <span class="block text-indigo-900 font-bold">ডোজ: ${drug.fixedDose}</span>
+                            <span class="text-[10px] text-slate-500">ওজনের উপর নির্ভরশীল নয়</span>
+                        </div>
+                    `;
+                } else {
+                    let totalMgPerDay = weight * drug.dailyDose;
+                    let totalAmountPerDay = totalMgPerDay / drug.conc;
+                    let dosePerTime = totalAmountPerDay / drug.freq;
+
+                    resBox.innerHTML = `
+                        <div class="p-2 bg-indigo-50 rounded-lg">
+                            <span class="block text-indigo-900 font-bold">প্রতি ডোজ: ${dosePerTime.toFixed(1)} ${drug.unit}</span>
+                            <span class="text-[10px] text-slate-500">দিনে ${drug.freq} বার খাবেন</span>
+                        </div>
+                    `;
+                }
+                resBox.classList.remove('hidden');
+            } else {
+                showToast("ওষুধটি ডাটাবেজে নেই বা অপশন সিলেক্ট করা হয়নি!");
+            }
+        }
+
+        // ৩. CrCl ক্যালকুলেটর ফাংশন
+        function calculateCrCl() {
+            const age = parseFloat(document.getElementById('p-age').value);
+            const weight = parseFloat(document.getElementById('p-weight').value);
+            const gender = document.getElementById('p-gender').value;
+            const serumCr = parseFloat(document.getElementById('serum-cr').value);
+            const resBox = document.getElementById('crcl-result');
+
+            if (!age || !weight || !serumCr) {
+                showToast("রোগীর বয়স, ওজন এবং Serum Cr দিন!");
+                return;
+            }
+
+            let crcl = ((140 - age) * weight) / (72 * serumCr);
+            if (gender === 'Female') crcl *= 0.85;
+
+            resBox.innerHTML = `<span class="block bg-indigo-50 text-indigo-900 font-bold p-2 rounded-lg">CrCl: ${crcl.toFixed(2)} mL/min</span>`;
+            resBox.classList.remove('hidden');
+        }
+
+        function addInvestigation() {
+            let val = document.getElementById('inv-input').value.trim();
+            if(!val) return;
+            const list = document.getElementById('pad-inv-list');
+            const li = document.createElement('li');
+            li.className = "group relative cursor-help flex justify-between pr-1 border-b border-dashed border-slate-100 pb-1";
+            li.innerHTML = `<span>${val}</span><button onclick="this.parentElement.remove(); saveDraftPrescription();" class="text-red-400 opacity-0 group-hover:opacity-100 text-[10px] transition"><i class="fa-solid fa-xmark"></i></button>`;
+            list.appendChild(li);
+            document.getElementById('inv-input').value = '';
+            saveDraftPrescription();
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            loadSavedDoctorProfile();
+            loadDraftPrescription();
+        });
+
+        function saveDoctorProfile() {
+            localStorage.setItem('rxpro_doc_profile', JSON.stringify({ 
+                name: document.getElementById('doc-name').value, 
+                degrees: document.getElementById('doc-degrees').value, 
+                chamber: document.getElementById('doc-chamber').value, 
+                theme: document.getElementById('theme-selector').value 
+            }));
+        }
+
+        function loadSavedDoctorProfile() {
+            const saved = localStorage.getItem('rxpro_doc_profile');
+            if (saved) {
+                const doc = JSON.parse(saved);
+                document.getElementById('doc-name').value = doc.name;
+                document.getElementById('doc-degrees').value = doc.degrees;
+                document.getElementById('doc-chamber').value = doc.chamber;
+                document.getElementById('theme-selector').value = doc.theme;
+                changeTemplate(doc.theme);
+            }
+        }
+
+        function saveDraftPrescription() {
+            localStorage.setItem('rxpro_current_draft', JSON.stringify({
+                p_name: document.getElementById('p-name').value, p_age: document.getElementById('p-age').value,
+                p_weight: document.getElementById('p-weight').value, p_gender: document.getElementById('p-gender').value,
+                p_phone: document.getElementById('p-phone').value, medicines: document.getElementById('pad-medicine-list').innerHTML,
+                cc_list: document.getElementById('cc-list').innerHTML, oe_list: document.getElementById('oe-list').innerHTML,
+                inv_list: document.getElementById('pad-inv-list').innerHTML
+            }));
+        }
+
+        function loadDraftPrescription() {
+            const saved = localStorage.getItem('rxpro_current_draft');
+            if (saved) {
+                const draft = JSON.parse(saved);
+                document.getElementById('p-name').value = draft.p_name || ''; 
+                document.getElementById('p-age').value = draft.p_age || '';
+                document.getElementById('p-weight').value = draft.p_weight || ''; 
+                document.getElementById('p-gender').value = draft.p_gender || 'Male';
+                document.getElementById('p-phone').value = draft.p_phone || '';
+                if(draft.medicines) document.getElementById('pad-medicine-list').innerHTML = draft.medicines;
+                if(draft.cc_list) document.getElementById('cc-list').innerHTML = draft.cc_list;
+                if(draft.oe_list) document.getElementById('oe-list').innerHTML = draft.oe_list;
+                if(draft.inv_list) document.getElementById('pad-inv-list').innerHTML = draft.inv_list;
+                updatePrescription();
+            }
+        }
+
+        function saveCurrentRxToLog() {
+            const phone = document.getElementById('p-phone').value.trim();
+            if (!phone) { showToast("মোবাইল নম্বর দিন!"); return; }
+            let logs = JSON.parse(localStorage.getItem('rxpro_patient_logs')) || {};
+            const rxData = { 
+                p_name: document.getElementById('p-name').value, 
+                p_gender: document.getElementById('p-gender').value, 
+                date: document.getElementById('current-date').innerText, 
+                medicines: document.getElementById('pad-medicine-list').innerHTML, 
+                cc_list: document.getElementById('cc-list').innerHTML, 
+                oe_list: document.getElementById('oe-list').innerHTML, 
+                inv_list: document.getElementById('pad-inv-list').innerHTML 
+            };
+            if (!logs[phone]) logs[phone] = [];
+            logs[phone].unshift(rxData); 
+            localStorage.setItem('rxpro_patient_logs', JSON.stringify(logs));
+            const stat = document.getElementById('log-status'); 
+            stat.innerText = `✓ সেভড!`; 
+            stat.classList.remove('hidden'); 
+            setTimeout(() => stat.classList.add('hidden'), 3000);
+        }
+
+        function searchPatientLog() {
+            const phone = document.getElementById('search-log-phone').value.trim();
+            const logs = JSON.parse(localStorage.getItem('rxpro_patient_logs')) || {};
+            if (logs[phone] && logs[phone].length > 0) {
+                const last = logs[phone][0];
+                document.getElementById('p-name').value = last.p_name; 
+                document.getElementById('p-gender').value = last.p_gender; 
+                document.getElementById('p-phone').value = phone;
+                document.getElementById('pad-medicine-list').innerHTML = last.medicines; 
+                document.getElementById('cc-list').innerHTML = last.cc_list; 
+                document.getElementById('oe-list').innerHTML = last.oe_list; 
+                document.getElementById('pad-inv-list').innerHTML = last.inv_list || '';
+                
+                updatePrescription(); 
+                saveDraftPrescription();
+                showToast(`ডাটা পাওয়া গেছে! তারিখ: ${last.date}`);
+            } else showToast("ডাটা পাওয়া যায়নি।");
+        }
+
+        let dashChart = null;
+        function renderDashboard() {
+            const logs = JSON.parse(localStorage.getItem('rxpro_patient_logs')) || {};
+            let uniquePatients = Object.keys(logs).length;
+            let totalRx = 0, male = 0, female = 0;
+            
+            Object.values(logs).forEach(visits => {
+                totalRx += visits.length;
+                if(visits[0].p_gender === 'Male') male++;
+                else female++;
+            });
+
+            document.getElementById('dash-total-patients').innerText = uniquePatients;
+            document.getElementById('dash-total-rx').innerText = totalRx;
+            document.getElementById('dash-gender-ratio').innerText = `${male} / ${female}`;
+
+            const ctx = document.getElementById('patientChart').getContext('2d');
+            if(dashChart) dashChart.destroy();
+            dashChart = new Chart(ctx, {
+                type: 'bar',
+                data: { 
+                    labels: ['Total Unique Patients', 'Total Prescriptions Issued'], 
+                    datasets: [{ 
+                        label: 'Analytics', 
+                        data: [uniquePatients, totalRx], 
+                        backgroundColor: ['#3b82f6', '#8b5cf6'], 
+                        borderRadius: 5 
+                    }] 
+                },
+                options: { responsive: true, scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } } }
+            });
+        }
+    </script>
+</body>
+</html>
