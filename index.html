@@ -143,6 +143,55 @@
 </head>
 
 <body class="text-slate-800">
+   
+   <div id="saas-gatekeeper" class="fixed inset-0 z-[9999] bg-slate-900/80 backdrop-blur-md flex items-center justify-center transition-opacity duration-500">
+    <div class="bg-white w-11/12 max-w-md rounded-2xl shadow-2xl overflow-hidden transform transition-all">
+        <div class="bg-blue-600 p-6 text-center">
+            <i class="fa-solid fa-file-prescription text-4xl text-white mb-2 animate-pulse"></i>
+            <h2 class="text-2xl font-bold text-white tracking-wide">MedRxPro</h2>
+            <p class="text-blue-100 text-sm mt-1">Advanced Clinical SaaS Platform</p>
+        </div>
+        
+        <div class="p-6">
+            <h3 class="text-lg font-bold text-slate-800 text-center mb-4">অ্যাক্সেস টোকেন প্রদান করুন</h3>
+            
+            <input type="text" id="gate-token-input" placeholder="Enter Token (e.g. FREE2026 or PRO...)" class="w-full p-3 rounded-xl border-2 border-slate-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-100 outline-none text-center font-mono uppercase tracking-widest text-lg mb-4 transition">
+            
+            <button onclick="unlockApp()" class="w-full bg-blue-600 text-white py-3 rounded-xl font-bold text-md hover:bg-blue-700 shadow-lg shadow-blue-200 transition">
+                আনলক করুন <i class="fa-solid fa-unlock-keyhole ml-1"></i>
+            </button>
+
+            <div class="mt-6 pt-5 border-t border-slate-100">
+                <h4 class="text-xs font-bold text-slate-400 uppercase tracking-wider text-center mb-3">Premium Plans</h4>
+                <div class="grid grid-cols-2 gap-3">
+                    <div class="border border-blue-100 bg-blue-50 p-3 rounded-xl text-center">
+                        <div class="text-xs font-bold text-blue-800 mb-1">১ বছর (1 Year)</div>
+                        <div class="text-lg font-extrabold text-blue-600">৳৫০</div>
+                    </div>
+                    <div class="border border-amber-100 bg-amber-50 p-3 rounded-xl text-center relative overflow-hidden">
+                        <div class="absolute top-0 right-0 bg-amber-500 text-white text-[8px] font-bold px-1.5 py-0.5 rounded-bl-lg">BEST</div>
+                        <div class="text-xs font-bold text-amber-900 mb-1">লাইফটাইম</div>
+                        <div class="text-lg font-extrabold text-amber-600">৳১০০</div>
+                    </div>
+                </div>
+                <p class="text-center text-[10px] text-slate-500 mt-3">অ্যাডভান্সড পেডিয়াট্রিক ডোজ এবং স্মার্ট টেমপ্লেট ব্যবহার করতে প্রো টোকেন সংগ্রহ করুন।</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="upgrade-prompt" class="fixed inset-0 z-[9999] bg-slate-900/60 backdrop-blur-sm flex items-center justify-center hidden opacity-0 transition-opacity duration-300">
+    <div class="bg-white w-10/12 max-w-sm p-6 rounded-2xl shadow-2xl text-center border-t-4 border-amber-500">
+        <i class="fa-solid fa-crown text-4xl text-amber-500 mb-3"></i>
+        <h3 class="text-lg font-bold text-slate-800 mb-2">প্রো ফিচার আনলক করুন</h3>
+        <p class="text-sm text-slate-600 mb-5">এই ফিচারটি ব্যবহার করতে <b>Premium</b> সাবস্ক্রিপশন প্রয়োজন। (১ বছর: ৳৫০, লাইফটাইম: ৳১০০)</p>
+        <div class="flex gap-2">
+            <button onclick="document.getElementById('upgrade-prompt').classList.add('hidden')" class="flex-1 py-2 bg-slate-100 text-slate-700 font-bold rounded-lg hover:bg-slate-200 transition">পরে</button>
+            <button onclick="location.reload()" class="flex-1 py-2 bg-amber-500 text-white font-bold rounded-lg hover:bg-amber-600 shadow-md transition">আপগ্রেড করুন</button>
+        </div>
+    </div>
+</div>
+
 
     <header class="sticky top-0 z-50 bg-blue-600 text-white px-4 py-3 shadow-md flex justify-between items-center">
         <div class="flex items-center gap-2">
@@ -406,6 +455,145 @@
             </div>
 
             <div id="tab-tools" class="space-y-6 hidden">
+               
+             <!-- EDD & Gestational Age Calculator -->
+<div class="glass-card p-5 rounded-2xl border-t-4 border-pink-500">
+    <h3 class="text-md font-bold text-pink-900 mb-3 flex items-center gap-2">
+        <i class="fa-solid fa-person-pregnant"></i> প্রেগন্যান্সি ক্যালকুলেটর (EDD & GA)
+    </h3>
+    <div class="p-3 bg-white rounded-xl shadow-sm border border-slate-100">
+        <label class="block text-xs font-bold text-slate-700 mb-2">শেষ মাসিকের তারিখ (LMP):</label>
+        
+        <!-- Updated Input Area with Reset Button -->
+        <div class="flex gap-2">
+            <input type="date" id="calc-lmp" class="p-2 rounded-lg border text-xs w-full focus:ring-2 focus:ring-pink-400 outline-none text-slate-700">
+            <button onclick="calculateEDD()" class="bg-pink-500 text-white px-4 py-2 rounded-lg text-xs font-bold hover:bg-pink-600 transition shrink-0">হিসাব করুন</button>
+            <button onclick="resetEDD()" class="bg-slate-200 text-slate-600 px-3 py-2 rounded-lg text-xs font-bold hover:bg-slate-300 transition shrink-0" title="Clear">
+                <i class="fa-solid fa-rotate-right"></i>
+            </button>
+        </div>
+        
+        <div id="edd-result" class="mt-3 text-sm hidden p-3 bg-pink-50 border border-pink-100 rounded-lg space-y-1.5">
+            <div class="flex justify-between border-b border-pink-200 pb-1">
+                <span class="font-semibold text-slate-600">ডেলিভারির সম্ভাব্য তারিখ (EDD):</span>
+                <span id="res-edd-date" class="font-bold text-pink-700"></span>
+            </div>
+            <div class="flex justify-between border-b border-pink-200 pb-1">
+                <span class="font-semibold text-slate-600">বর্তমান বয়স (Gestational Age):</span>
+                <span id="res-ga" class="font-bold text-pink-700"></span>
+            </div>
+            <div class="flex justify-between">
+                <span class="font-semibold text-slate-600">ট্রাইমেস্টার:</span>
+                <span id="res-trimester" class="font-bold text-pink-700"></span>
+            </div>
+            <!-- ANC Button Container -->
+            <div id="anc-btn-container" class="mt-2"></div>
+        </div>
+    </div>
+</div>
+
+
+<div class="glass-card p-5 rounded-2xl border-t-4 border-cyan-500">
+    <h3 class="text-md font-bold text-cyan-900 mb-3 flex items-center gap-2">
+        <i class="fa-solid fa-droplet"></i> আইভি ড্রিপ রেট (IV Fluid Calculator)
+    </h3>
+    <div class="p-3 bg-white rounded-xl shadow-sm border border-slate-100">
+        <div class="grid grid-cols-2 md:grid-cols-3 gap-2 mb-2">
+            <div>
+                <label class="block text-[10px] font-bold text-slate-500 mb-1">ভলিউম (ml)</label>
+                <input type="number" id="iv-vol" placeholder="e.g. 1000" class="p-2 rounded-lg border text-xs w-full focus:ring-2 focus:ring-cyan-400 outline-none">
+            </div>
+            <div>
+                <label class="block text-[10px] font-bold text-slate-500 mb-1">সময় (Hours)</label>
+                <input type="number" step="0.5" id="iv-time" placeholder="e.g. 8" class="p-2 rounded-lg border text-xs w-full focus:ring-2 focus:ring-cyan-400 outline-none">
+            </div>
+            <div class="col-span-2 md:col-span-1">
+                <label class="block text-[10px] font-bold text-slate-500 mb-1">ড্রপ ফ্যাক্টর (Set)</label>
+                <select id="iv-drop-factor" class="p-2 rounded-lg border text-xs w-full bg-white focus:ring-2 focus:ring-cyan-400 outline-none">
+                    <option value="15">Macrodrip (15 drops/ml)</option>
+                    <option value="20">Macrodrip (20 drops/ml)</option>
+                    <option value="60">Microdrip (60 drops/ml)</option>
+                </select>
+            </div>
+        </div>
+        <button onclick="calculateIVDrip()" class="w-full bg-cyan-600 text-white px-3 py-2 mt-1 rounded-lg text-xs font-bold hover:bg-cyan-700 transition">ক্যালকুলেট</button>
+        <div id="iv-result" class="mt-2 text-sm font-bold text-center text-cyan-800 hidden bg-cyan-50 p-2 border border-cyan-100 rounded-lg"></div>
+    </div>
+</div>
+
+<!-- ৩. Auto-Generated Bengali Diet & Lifestyle Charts (20 Diseases) -->
+<div class="glass-card p-5 rounded-2xl border-t-4 border-emerald-500">
+    <h3 class="text-md font-bold text-emerald-900 mb-3 flex items-center gap-2">
+        <i class="fa-solid fa-leaf"></i> অটো ডায়েট ও লাইফস্টাইল চার্ট (বাংলা)
+    </h3>
+    <p class="text-xs text-slate-500 mb-3">ক্লিক করলে সরাসরি প্রেসক্রিপশন প্যাডে স্বাস্থ্য পরামর্শ যুক্ত হয়ে যাবে।</p>
+    
+    <div class="flex flex-wrap gap-1.5 h-48 overflow-y-auto no-scrollbar p-1">
+        <button onclick="applyDietChart('diabetes')" class="px-2.5 py-1.5 bg-white border border-emerald-200 text-emerald-700 rounded-lg text-[11px] font-bold hover:bg-emerald-600 hover:text-white transition shadow-sm"><i class="fa-solid fa-cubes-stacked mr-1"></i> ডায়াবেটিস</button>
+        <button onclick="applyDietChart('htn')" class="px-2.5 py-1.5 bg-white border border-emerald-200 text-emerald-700 rounded-lg text-[11px] font-bold hover:bg-emerald-600 hover:text-white transition shadow-sm"><i class="fa-solid fa-heart-pulse mr-1"></i> উচ্চ রক্তচাপ</button>
+        <button onclick="applyDietChart('ckd')" class="px-2.5 py-1.5 bg-white border border-emerald-200 text-emerald-700 rounded-lg text-[11px] font-bold hover:bg-emerald-600 hover:text-white transition shadow-sm"><i class="fa-solid fa-kidney mr-1"></i> কিডনি (CKD)</button>
+        <button onclick="applyDietChart('gerd')" class="px-2.5 py-1.5 bg-white border border-emerald-200 text-emerald-700 rounded-lg text-[11px] font-bold hover:bg-emerald-600 hover:text-white transition shadow-sm"><i class="fa-solid fa-fire-flame-simple mr-1"></i> গ্যাস্ট্রিক/আলসার</button>
+        <button onclick="applyDietChart('pregnancy')" class="px-2.5 py-1.5 bg-white border border-emerald-200 text-emerald-700 rounded-lg text-[11px] font-bold hover:bg-emerald-600 hover:text-white transition shadow-sm"><i class="fa-solid fa-person-pregnant mr-1"></i> গর্ভাবস্থা</button>
+        
+        <button onclick="applyDietChart('fatty_liver')" class="px-2.5 py-1.5 bg-white border border-emerald-200 text-emerald-700 rounded-lg text-[11px] font-bold hover:bg-emerald-600 hover:text-white transition shadow-sm"><i class="fa-solid fa-lungs mr-1"></i> ফ্যাটি লিভার</button>
+        <button onclick="applyDietChart('uric_acid')" class="px-2.5 py-1.5 bg-white border border-emerald-200 text-emerald-700 rounded-lg text-[11px] font-bold hover:bg-emerald-600 hover:text-white transition shadow-sm"><i class="fa-solid fa-bone mr-1"></i> ইউরিক এসিড (গাউট)</button>
+        <button onclick="applyDietChart('ibs')" class="px-2.5 py-1.5 bg-white border border-emerald-200 text-emerald-700 rounded-lg text-[11px] font-bold hover:bg-emerald-600 hover:text-white transition shadow-sm"><i class="fa-solid fa-bacteria mr-1"></i> আইবিএস (IBS)</button>
+        <button onclick="applyDietChart('anemia')" class="px-2.5 py-1.5 bg-white border border-emerald-200 text-emerald-700 rounded-lg text-[11px] font-bold hover:bg-emerald-600 hover:text-white transition shadow-sm"><i class="fa-solid fa-droplet mr-1"></i> রক্তশূন্যতা</button>
+        <button onclick="applyDietChart('obesity')" class="px-2.5 py-1.5 bg-white border border-emerald-200 text-emerald-700 rounded-lg text-[11px] font-bold hover:bg-emerald-600 hover:text-white transition shadow-sm"><i class="fa-solid fa-weight-scale mr-1"></i> ওজন কমানো</button>
+
+        <button onclick="applyDietChart('asthma')" class="px-2.5 py-1.5 bg-white border border-emerald-200 text-emerald-700 rounded-lg text-[11px] font-bold hover:bg-emerald-600 hover:text-white transition shadow-sm"><i class="fa-solid fa-lungs-virus mr-1"></i> হাঁপানি/শ্বাসকষ্ট</button>
+        <button onclick="applyDietChart('uti')" class="px-2.5 py-1.5 bg-white border border-emerald-200 text-emerald-700 rounded-lg text-[11px] font-bold hover:bg-emerald-600 hover:text-white transition shadow-sm"><i class="fa-solid fa-toilet mr-1"></i> ইউরিন ইনফেকশন</button>
+        <button onclick="applyDietChart('constipation')" class="px-2.5 py-1.5 bg-white border border-emerald-200 text-emerald-700 rounded-lg text-[11px] font-bold hover:bg-emerald-600 hover:text-white transition shadow-sm"><i class="fa-solid fa-poop mr-1"></i> কোষ্ঠকাঠিন্য</button>
+        <button onclick="applyDietChart('diarrhea')" class="px-2.5 py-1.5 bg-white border border-emerald-200 text-emerald-700 rounded-lg text-[11px] font-bold hover:bg-emerald-600 hover:text-white transition shadow-sm"><i class="fa-solid fa-virus-slash mr-1"></i> ডায়রিয়া</button>
+        <button onclick="applyDietChart('piles')" class="px-2.5 py-1.5 bg-white border border-emerald-200 text-emerald-700 rounded-lg text-[11px] font-bold hover:bg-emerald-600 hover:text-white transition shadow-sm"><i class="fa-solid fa-circle-exclamation mr-1"></i> পাইলস/অর্শ</button>
+
+        <button onclick="applyDietChart('dengue')" class="px-2.5 py-1.5 bg-white border border-emerald-200 text-emerald-700 rounded-lg text-[11px] font-bold hover:bg-emerald-600 hover:text-white transition shadow-sm"><i class="fa-solid fa-mosquito mr-1"></i> ডেঙ্গু জ্বর</button>
+        <button onclick="applyDietChart('typhoid')" class="px-2.5 py-1.5 bg-white border border-emerald-200 text-emerald-700 rounded-lg text-[11px] font-bold hover:bg-emerald-600 hover:text-white transition shadow-sm"><i class="fa-solid fa-temperature-high mr-1"></i> টাইফয়েড জ্বর</button>
+        <button onclick="applyDietChart('jaundice')" class="px-2.5 py-1.5 bg-white border border-emerald-200 text-emerald-700 rounded-lg text-[11px] font-bold hover:bg-emerald-600 hover:text-white transition shadow-sm"><i class="fa-solid fa-eye mr-1"></i> জন্ডিস</button>
+        <button onclick="applyDietChart('osteoarthritis')" class="px-2.5 py-1.5 bg-white border border-emerald-200 text-emerald-700 rounded-lg text-[11px] font-bold hover:bg-emerald-600 hover:text-white transition shadow-sm"><i class="fa-solid fa-crutch mr-1"></i> বাত/হাড় ক্ষয়</button>
+        <button onclick="applyDietChart('cholesterol')" class="px-2.5 py-1.5 bg-white border border-emerald-200 text-emerald-700 rounded-lg text-[11px] font-bold hover:bg-emerald-600 hover:text-white transition shadow-sm"><i class="fa-solid fa-vial mr-1"></i> কোলেস্টেরল</button>
+    </div>
+</div>
+
+
+<div class="glass-card p-5 rounded-2xl border-t-4 border-indigo-500">
+    <h3 class="text-md font-bold text-indigo-900 mb-3 flex items-center gap-2">
+        <i class="fa-solid fa-syringe"></i> জাতীয় টিকা কর্মসূচি (EPI Tracker)
+    </h3>
+    <div class="p-3 bg-white rounded-xl shadow-sm border border-slate-100">
+        <label class="block text-xs font-bold text-slate-700 mb-2">শিশুর জন্ম তারিখ (DOB):</label>
+        <div class="flex gap-2">
+            <input type="date" id="epi-dob" class="p-2 rounded-lg border text-xs w-full focus:ring-2 focus:ring-indigo-400 outline-none text-slate-700">
+            <button onclick="generateEPISchedule()" class="bg-indigo-600 text-white px-4 py-2 rounded-lg text-xs font-bold hover:bg-indigo-700 transition shrink-0">প্যাডে যুক্ত করুন</button>
+        </div>
+    </div>
+</div>
+
+<div class="glass-card p-5 rounded-2xl border-t-4 border-orange-500">
+    <h3 class="text-md font-bold text-orange-900 mb-3 flex items-center gap-2">
+        <i class="fa-solid fa-stairs"></i> Tapering Dose Engine (ডোজ কমানোর নিয়ম)
+    </h3>
+    <div class="p-3 bg-white rounded-xl shadow-sm border border-slate-100">
+        <input type="text" id="taper-drug" placeholder="ওষুধের নাম (e.g., Prednisolone 5mg)" class="w-full p-2 mb-2 rounded-lg border text-xs focus:ring-2 focus:ring-orange-400 outline-none">
+        
+        <div class="grid grid-cols-3 gap-2 mb-2">
+            <div>
+                <label class="block text-[10px] font-bold text-slate-500 mb-1">শুরুর ডোজ (Tab)</label>
+                <input type="number" step="0.5" id="taper-start" placeholder="e.g. 4" class="p-2 rounded-lg border text-xs w-full focus:ring-2 focus:ring-orange-400 outline-none">
+            </div>
+            <div>
+                <label class="block text-[10px] font-bold text-slate-500 mb-1">কত করে কমবে</label>
+                <input type="number" step="0.5" id="taper-step" placeholder="e.g. 1" class="p-2 rounded-lg border text-xs w-full focus:ring-2 focus:ring-orange-400 outline-none">
+            </div>
+            <div>
+                <label class="block text-[10px] font-bold text-slate-500 mb-1">কত দিন পরপর</label>
+                <input type="number" id="taper-days" placeholder="e.g. 3" class="p-2 rounded-lg border text-xs w-full focus:ring-2 focus:ring-orange-400 outline-none">
+            </div>
+        </div>
+        <button onclick="generateTaperingSchedule()" class="w-full bg-orange-600 text-white px-3 py-2 rounded-lg text-xs font-bold hover:bg-orange-700 transition">ক্যালকুলেট ও প্যাডে যুক্ত করুন</button>
+    </div>
+</div>
+
                 <div class="glass-card p-5 rounded-2xl border-t-4 border-indigo-500">
                     <h3 class="text-md font-bold text-indigo-900 mb-3 flex items-center gap-2">
                         <i class="fa-solid fa-calculator"></i> ক্লিনিক্যাল ক্যালকুলেটর
@@ -555,6 +743,7 @@
                 </div>
             </div>
 
+
             <div id="tab-history" class="space-y-6 hidden">
                 <div class="glass-card p-5 rounded-2xl bg-blue-50 border border-blue-100">
                     <h3 class="text-md font-bold text-blue-900 mb-3 flex items-center gap-2">
@@ -573,6 +762,90 @@
             </div>
 
             <div id="tab-settings" class="space-y-6 hidden">
+               
+               <div class="glass-card p-5 rounded-2xl border-t-4 border-amber-500 mt-6">
+    <div class="flex justify-between items-center mb-4">
+        <h3 class="text-md font-bold text-amber-900 flex items-center gap-2">
+            <i class="fa-solid fa-crown text-amber-500"></i> সাবস্ক্রিপশন ও বিলিং (Pro)
+        </h3>
+        <span id="sub-status-badge" class="bg-slate-200 text-slate-600 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider">Free Plan</span>
+    </div>
+
+    <div class="space-y-4">
+        <div class="bg-amber-50 p-4 rounded-xl border border-amber-100">
+            <label class="block text-xs font-bold text-amber-900 mb-2">অ্যাক্টিভেশন টোকেন দিন (e.g. KABBO05Y)</label>
+            <div class="flex gap-2">
+                <input type="text" id="sub-token-input" placeholder="Enter Token Key..." class="w-full p-2.5 rounded-xl border border-amber-300 focus:ring-2 focus:ring-amber-500 outline-none text-sm font-mono uppercase">
+                <button onclick="verifySubscriptionToken()" class="bg-amber-600 text-white px-5 rounded-xl text-xs font-bold hover:bg-amber-700 transition shrink-0 shadow-md">Verify</button>
+            </div>
+            <p id="token-msg" class="text-[10px] mt-2 font-semibold hidden"></p>
+        </div>
+
+        <div id="invoice-section" class="bg-white p-4 rounded-xl border border-slate-200 hidden opacity-0 transition-opacity duration-500">
+            <h4 class="text-sm font-bold text-slate-700 mb-3 border-b pb-2">ইনভয়েস জেনারেট করুন</h4>
+            <div class="grid grid-cols-2 gap-3 mb-3">
+                <input type="text" id="inv-clinic-name" value="City Medical Center" placeholder="Clinic/Doctor Name" class="p-2 rounded-lg border text-xs focus:ring-2 focus:ring-blue-500 outline-none">
+                <select id="inv-plan-type" class="p-2 rounded-lg border text-xs bg-white focus:ring-2 focus:ring-blue-500 outline-none">
+                    <option value="1000">Monthly Pro - ৳1,000</option>
+                    <option value="10000">Yearly Premium - ৳10,000</option>
+                </select>
+            </div>
+            <button onclick="generateInvoicePDF()" class="w-full bg-slate-800 text-white p-2.5 rounded-xl text-xs font-bold hover:bg-slate-900 transition flex justify-center items-center gap-2">
+                <i class="fa-solid fa-file-invoice-dollar"></i> Download Invoice PDF
+            </button>
+        </div>
+    </div>
+</div>
+
+<div id="hidden-invoice-template" class="hidden">
+    <div id="invoice-print-area" class="bg-white p-8 w-[210mm] text-slate-800 font-sans">
+        <div class="flex justify-between items-start border-b-2 border-slate-800 pb-4 mb-6">
+            <div>
+                <h1 class="text-3xl font-bold text-blue-900 tracking-wide">MedRxPro</h1>
+                <p class="text-sm font-semibold text-slate-500 mt-1">Advanced EMR Solutions</p>
+            </div>
+            <div class="text-right">
+                <h2 class="text-xl font-bold text-slate-700 uppercase">Invoice</h2>
+                <p class="text-xs font-bold text-slate-500 mt-1">Date: <span id="print-inv-date"></span></p>
+                <p class="text-xs font-bold text-slate-500">Inv #: <span id="print-inv-id"></span></p>
+            </div>
+        </div>
+        <div class="mb-8">
+            <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Billed To:</h3>
+            <p id="print-inv-client" class="text-lg font-bold text-slate-800"></p>
+        </div>
+        <table class="w-full text-left mb-8 border-collapse">
+            <thead>
+                <tr class="bg-slate-100 text-slate-700 text-sm">
+                    <th class="p-3 border-b border-slate-300">Description</th>
+                    <th class="p-3 border-b border-slate-300 text-right">Amount (BDT)</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td id="print-inv-desc" class="p-3 border-b border-slate-200 text-sm font-semibold"></td>
+                    <td id="print-inv-amount" class="p-3 border-b border-slate-200 text-right text-sm font-bold"></td>
+                </tr>
+            </tbody>
+        </table>
+        <div class="flex justify-end">
+            <div class="w-1/2">
+                <div class="flex justify-between border-b border-slate-200 p-2">
+                    <span class="font-bold text-sm">Subtotal:</span>
+                    <span id="print-inv-subtotal" class="font-bold text-sm"></span>
+                </div>
+                <div class="flex justify-between bg-blue-50 p-2 mt-2 rounded">
+                    <span class="font-bold text-lg text-blue-900">Total Paid:</span>
+                    <span id="print-inv-total" class="font-bold text-lg text-blue-900"></span>
+                </div>
+            </div>
+        </div>
+        <div class="mt-12 text-center text-xs font-semibold text-slate-400 border-t pt-4 border-slate-200">
+            Thank you for subscribing to MedRxPro! This is a system-generated invoice.
+        </div>
+    </div>
+</div>
+
                 <div class="glass-card p-5 rounded-2xl">
                     <h3 class="text-md font-bold text-blue-900 mb-3 flex items-center gap-2">
                         <i class="fa-solid fa-user-md"></i> ডক্টর প্রোফাইল ও সেটিংস
@@ -597,6 +870,9 @@
         <section id="preview-section" class="lg:col-span-7 hidden lg:block">
             <div class="mb-3 flex flex-wrap gap-2 justify-end">
                 <button onclick="printPrescription()" class="bg-emerald-600 text-white px-3 py-2 rounded-xl text-xs font-bold hover:bg-emerald-700 flex items-center gap-1.5 shadow"><i class="fa-solid fa-print"></i> PDF/Print</button>
+                <button onclick="toggleReferralMode()" id="btn-referral" class="bg-purple-600 text-white px-3 py-2 rounded-xl text-xs font-bold hover:bg-purple-700 flex items-center gap-1.5 shadow transition">
+    <i class="fa-solid fa-file-export"></i> Referral Note
+</button>
                 <button onclick="shareWhatsApp()" class="bg-green-500 text-white px-3 py-2 rounded-xl text-xs font-bold hover:bg-green-600 flex items-center gap-1.5 shadow"><i class="fa-brands fa-whatsapp"></i> WhatsApp</button>
                 <button onclick="saveCurrentRxToLog()" class="bg-blue-700 text-white px-3 py-2 rounded-xl text-xs font-bold hover:bg-blue-800 flex items-center gap-1.5 shadow"><i class="fa-solid fa-floppy-disk"></i> রেকর্ড সেভ</button>
             </div>
@@ -729,7 +1005,647 @@
     </div>
 
     <script>
-        // Expanded Drug Database for better demonstration
+       
+       // ==========================================
+// 1. National EPI Vaccination Tracker
+// ==========================================
+function generateEPISchedule() {
+    if (typeof userTier !== 'undefined' && userTier !== 'PRO') { showUpgradePrompt(); return; }
+
+    const dobInput = document.getElementById('epi-dob').value;
+    if(!dobInput) { showToast("শিশুর জন্ম তারিখ নির্বাচন করুন!"); return; }
+
+    const dob = new Date(dobInput);
+    
+    // Helper function to add days to date
+    const addDays = (date, days) => {
+        let result = new Date(date);
+        result.setDate(result.getDate() + days);
+        return result.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+    };
+
+    const schedule = [
+        { age: "জন্মের পর", vaccines: "BCG, OPV-0", date: addDays(dob, 0) },
+        { age: "৬ সপ্তাহ", vaccines: "Penta-1, OPV-1, PCV-1", date: addDays(dob, 42) },
+        { age: "১০ সপ্তাহ", vaccines: "Penta-2, OPV-2, PCV-2", date: addDays(dob, 70) },
+        { age: "১৪ সপ্তাহ", vaccines: "Penta-3, OPV-3, PCV-3", date: addDays(dob, 98) },
+        { age: "৯ মাস", vaccines: "MR-1 (হাম ও রুবেলা)", date: addDays(dob, 274) },
+        { age: "১৫ মাস", vaccines: "MR-2 (হাম ও রুবেলা)", date: addDays(dob, 456) }
+    ];
+
+    const list = document.getElementById('pad-medicine-list');
+    const item = document.createElement('li');
+    item.className = "mt-4 mb-4 p-0 list-none relative group print:bg-transparent print:border-none";
+    
+    let tableHtml = `
+        <div class="border border-indigo-200 rounded-lg overflow-hidden">
+            <h4 class="bg-indigo-50 text-indigo-900 font-bold text-xs p-2 text-center uppercase tracking-wider">EPI Vaccination Schedule</h4>
+            <table class="w-full text-left text-xs">
+                <thead class="bg-slate-100 text-slate-600">
+                    <tr><th class="p-2 border-b">বয়স</th><th class="p-2 border-b">টিকার নাম</th><th class="p-2 border-b">তারিখ</th></tr>
+                </thead>
+                <tbody>`;
+    
+    schedule.forEach(row => {
+        tableHtml += `<tr class="border-b border-slate-100 last:border-none"><td class="p-2 font-semibold text-slate-700">${row.age}</td><td class="p-2 text-indigo-700 font-bold">${row.vaccines}</td><td class="p-2 font-mono text-slate-600">${row.date}</td></tr>`;
+    });
+
+    tableHtml += `</tbody></table></div>
+        <button onclick="this.parentElement.remove(); saveDraftPrescription(); generateQR();" class="absolute -top-3 -right-2 text-red-500 bg-white border border-red-100 hover:bg-red-50 p-2 rounded-full text-xs shadow-md opacity-0 group-hover:opacity-100 transition print:hidden">
+            <i class="fa-solid fa-trash"></i>
+        </button>`;
+
+    item.innerHTML = tableHtml;
+    list.appendChild(item);
+    
+    saveDraftPrescription();
+    showToast("✅ EPI সিডিউল প্যাডে যুক্ত হয়েছে!");
+}
+
+
+// ==========================================
+// 3. Steroid & Psych Drug Tapering Engine
+// ==========================================
+function generateTaperingSchedule() {
+    if (typeof userTier !== 'undefined' && userTier !== 'PRO') { showUpgradePrompt(); return; }
+
+    const drug = document.getElementById('taper-drug').value;
+    const start = parseFloat(document.getElementById('taper-start').value);
+    const step = parseFloat(document.getElementById('taper-step').value);
+    const days = parseInt(document.getElementById('taper-days').value);
+
+    if(!drug || !start || !step || !days) { showToast("সকল তথ্য সঠিকভাবে দিন!"); return; }
+    if(step >= start || step <= 0) { showToast("কমানোর পরিমাণ (Step) লজিক্যাল নয়!"); return; }
+
+    let currentDose = start;
+    let totalTabs = 0;
+    let instructionsHtml = `<div class="mt-2 space-y-1.5 pl-4 border-l-2 border-orange-300">`;
+    let phase = 1;
+
+    while (currentDose > 0) {
+        totalTabs += (currentDose * days);
+        instructionsHtml += `<div class="text-sm font-semibold text-slate-700 flex items-center gap-2">
+            <span class="bg-orange-100 text-orange-800 text-[10px] px-1.5 py-0.5 rounded font-bold">ধাপ ${phase}</span> 
+            আগামী <span contenteditable="true" class="border-b border-dashed border-slate-300 outline-none focus:border-orange-500 px-1 text-orange-600">${days} দিন</span> : 
+            <span contenteditable="true" class="border-b border-dashed border-slate-300 outline-none focus:border-orange-500 px-1 text-orange-600">${currentDose}টি করে</span> খাবেন।
+        </div>`;
+        currentDose -= step;
+        phase++;
+    }
+    
+    instructionsHtml += `</div><div class="mt-2 text-xs font-bold text-slate-500 italic">মোট বড়ি প্রয়োজন: আনুমানিক ${Math.ceil(totalTabs)} টি</div>`;
+
+    const list = document.getElementById('pad-medicine-list');
+    const item = document.createElement('li');
+    item.className = "font-semibold text-slate-900 border-b pb-3 border-dashed border-slate-200 relative group list-none mb-3 bg-orange-50/30 p-2 rounded-xl print:bg-transparent print:border-none print:p-0";
+    
+    item.innerHTML = `
+        <div class="flex justify-between items-start">
+            <div class="flex-1">
+                <div class="flex items-center gap-1">
+                    <span class="text-orange-600 font-bold text-[15px]">▶</span>
+                    <span contenteditable="true" class="text-blue-900 font-bold text-[15px] outline-none" onblur="saveDraftPrescription()">${drug} (Tapering Dose)</span>
+                </div>
+                ${instructionsHtml}
+            </div>
+            <button onclick="this.parentElement.parentElement.remove(); saveDraftPrescription(); generateQR();" class="text-red-500 hover:text-red-700 bg-white shadow-sm p-1.5 rounded-md text-xs opacity-0 group-hover:opacity-100 transition shrink-0 print:hidden">
+                <i class="fa-solid fa-trash"></i>
+            </button>
+        </div>`;
+    
+    list.appendChild(item);
+    
+    document.getElementById('taper-drug').value = '';
+    saveDraftPrescription();
+    showToast("✅ Tapering Dose প্যাডে যুক্ত হয়েছে!");
+}
+
+
+// ==========================================
+// 4. Smart ANC Protocol Auto-Filler
+// ==========================================
+// Note: Call this from inside your existing calculateEDD() function.
+// Replace the end of your calculateEDD() function with this modified logic:
+/*
+    // Add this snippet inside calculateEDD() after setting trimester text:
+    let ancBtn = `<button onclick="applyANCProtocol(${weeks})" class="mt-3 w-full bg-pink-600 text-white py-1.5 rounded-lg text-xs font-bold hover:bg-pink-700 shadow-sm transition"><i class="fa-solid fa-notes-medical"></i> ANC প্রোটোকল অ্যাপ্লাই করুন</button>`;
+    document.getElementById('edd-result').innerHTML += ancBtn;
+*/
+
+function applyANCProtocol(weeks) {
+    if (typeof userTier !== 'undefined' && userTier !== 'PRO') { showUpgradePrompt(); return; }
+
+    const addInv = (testName) => {
+        const invList = document.getElementById('pad-inv-list');
+        invList.innerHTML += `<li class="group relative cursor-help flex justify-between pr-1 border-b border-dashed border-slate-100 pb-1"><span>${testName}</span><button onclick="this.parentElement.remove(); saveDraftPrescription();" class="text-red-400 opacity-0 group-hover:opacity-100 text-[10px] transition"><i class="fa-solid fa-xmark"></i></button></li>`;
+    };
+
+    const addMed = (name, dose, duration, inst) => {
+        const medList = document.getElementById('pad-medicine-list');
+        medList.innerHTML += `<li class="font-semibold text-slate-900 border-b pb-2 border-dashed border-slate-100 relative group list-none mb-2"><div class="flex justify-between items-start"><div class="flex-1"><div class="flex items-center gap-1"><span class="text-blue-900 font-bold text-[15px]">▶</span><span contenteditable="true" class="text-blue-900 font-bold text-[15px] outline-none">${name}</span></div><div class="flex items-center mt-1 pl-4 gap-2 font-mono font-semibold text-xs text-slate-600"><span>💊</span><span contenteditable="true">${dose}</span><span>🗓</span><span contenteditable="true">${duration}</span><span>🕒</span><span contenteditable="true" class="flex-1">${inst}</span></div></div><button onclick="this.parentElement.parentElement.remove(); saveDraftPrescription();" class="text-red-500 opacity-0 group-hover:opacity-100 transition shrink-0 print:hidden"><i class="fa-solid fa-trash"></i></button></div></li>`;
+    };
+
+    if (weeks < 13) {
+        addMed("Folic Acid 5mg", "০+১+০", "চলবে (৩ মাস পর্যন্ত)", "দুপুরে খাবারের পর");
+        addInv("USG of Pregnancy Profile");
+        addInv("CBC, Blood Grouping & Rh Factor");
+        addInv("RBS, Urine R/M/E");
+    } else if (weeks >= 13 && weeks <= 26) {
+        addMed("Iron Polymaltose + Folic Acid", "১+০+০", "চলবে", "দুপুরে খাবারের পর");
+        addMed("Calcium Carbonate + Vit D3", "০+০+১", "চলবে", "রাতে খাবারের পর (আয়রন ও ক্যালসিয়াম একসাথে খাবেন না)");
+        addInv("USG for Anomaly Scan (18-22 weeks)");
+    } else {
+        addMed("Iron Polymaltose + Folic Acid", "১+০+০", "ডেলিভারি পর্যন্ত চলবে", "দুপুরে খাবারের পর");
+        addMed("Calcium Carbonate + Vit D3", "০+০+১", "ডেলিভারি পর্যন্ত চলবে", "রাতে খাবারের পর");
+        addInv("USG for Fetal Well-being & Biophysical Profile");
+        addInv("CBC, RBS, Urine R/M/E (Follow-up)");
+    }
+
+    saveDraftPrescription();
+    showToast("✅ ANC প্রোটোকল প্যাডে লেখা হয়েছে!");
+}
+
+
+// ==========================================
+// 5. Instant Clinical Referral Generator
+// ==========================================
+let isReferralMode = false;
+
+function toggleReferralMode() {
+    if (typeof userTier !== 'undefined' && userTier !== 'PRO') { showUpgradePrompt(); return; }
+
+    const pad = document.getElementById('prescription-pad');
+    const rxSymbol = pad.querySelector('.text-2xl.font-serif');
+    const btn = document.getElementById('btn-referral');
+
+    isReferralMode = !isReferralMode;
+
+    if (isReferralMode) {
+        // Change button style
+        btn.classList.replace('bg-purple-600', 'bg-red-600');
+        btn.classList.replace('hover:bg-purple-700', 'hover:bg-red-700');
+        btn.innerHTML = `<i class="fa-solid fa-xmark"></i> Cancel Referral`;
+
+        // Hide Rx Symbol
+        if(rxSymbol) rxSymbol.style.display = 'none';
+
+        // Inject Referral Header (if doesn't exist)
+        let refHeader = document.getElementById('referral-header');
+        if (!refHeader) {
+            refHeader = document.createElement('div');
+            refHeader.id = 'referral-header';
+            refHeader.className = "mb-4 border-2 border-slate-800 p-4 rounded-xl bg-slate-50";
+            refHeader.innerHTML = `
+                <h2 class="text-xl font-bold text-center text-slate-800 uppercase tracking-widest border-b-2 border-slate-300 pb-2 mb-3">Clinical Referral Note</h2>
+                <div class="space-y-2 text-sm font-semibold">
+                    <div class="flex items-center gap-2">
+                        <span class="text-slate-600 w-24">Referred To:</span>
+                        <div contenteditable="true" class="flex-1 border-b border-dashed border-slate-400 outline-none focus:border-blue-500 text-blue-900" onblur="saveDraftPrescription()">Duty Medical Officer / Consultant</div>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="text-slate-600 w-24">Hospital:</span>
+                        <div contenteditable="true" class="flex-1 border-b border-dashed border-slate-400 outline-none focus:border-blue-500 text-blue-900" onblur="saveDraftPrescription()">Sadar Hospital / Medical College</div>
+                    </div>
+                    <div class="flex items-start gap-2 mt-2">
+                        <span class="text-slate-600 w-24 mt-1">Reason:</span>
+                        <div contenteditable="true" class="flex-1 border-b border-dashed border-slate-400 outline-none focus:border-blue-500 min-h-[40px] text-red-700" onblur="saveDraftPrescription()">For further evaluation and expert management.</div>
+                    </div>
+                </div>
+                <div class="mt-4 text-sm font-bold text-slate-800 border-b pb-1">Treatment Given Here:</div>
+            `;
+            // Insert exactly where Rx symbol is
+            rxSymbol.parentNode.insertBefore(refHeader, rxSymbol);
+        } else {
+            refHeader.style.display = 'block';
+        }
+        
+        pad.classList.add('border-t-8', 'border-red-700'); 
+        showToast("✓ Referral Note Mode Active");
+
+    } else {
+        // Revert to Prescription Mode
+        btn.classList.replace('bg-red-600', 'bg-purple-600');
+        btn.classList.replace('hover:bg-red-700', 'hover:bg-purple-700');
+        btn.innerHTML = `<i class="fa-solid fa-file-export"></i> Referral Note`;
+
+        if(rxSymbol) rxSymbol.style.display = 'block';
+        
+        const refHeader = document.getElementById('referral-header');
+        if (refHeader) refHeader.style.display = 'none';
+
+        pad.classList.remove('border-t-8', 'border-red-700');
+        showToast("✓ Reverted to Prescription Mode");
+    }
+}
+
+       // ==========================================
+// Advanced SaaS Pro Features
+// ==========================================
+
+// ১. EDD & Gestational Age Calculator
+function calculateEDD() {
+    // Pro check integration
+    if (typeof userTier !== 'undefined' && userTier !== 'PRO') {
+        showUpgradePrompt();
+        return;
+    }
+
+    const lmpInput = document.getElementById('calc-lmp').value;
+    if(!lmpInput) {
+        showToast("অনুগ্রহ করে LMP তারিখ নির্বাচন করুন!");
+        return;
+    }
+
+    const lmpDate = new Date(lmpInput);
+    const today = new Date();
+    
+    // Validate future dates
+    if (lmpDate > today) {
+        showToast("LMP তারিখ ভবিষ্যতের হতে পারে না!");
+        return;
+    }
+
+    // EDD Calculation (LMP + 280 days)
+    const eddDate = new Date(lmpDate.getTime() + 280 * 24 * 60 * 60 * 1000);
+    
+    // Gestational Age Calculation
+    const diffTime = Math.abs(today - lmpDate);
+    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+    
+    if (diffDays > 300) {
+        showToast("LMP অনেক পুরনো। সঠিক তারিখ দিন।");
+        return;
+    }
+
+    const weeks = Math.floor(diffDays / 7);
+    const days = diffDays % 7;
+    
+    // Trimester Check
+    let trimester = "1st Trimester (প্রথম ৩ মাস)";
+    if (weeks >= 13 && weeks <= 26) trimester = "2nd Trimester (মাঝামাঝি সময়)";
+    else if (weeks > 26) trimester = "3rd Trimester (শেষ ৩ মাস)";
+
+    // Update UI
+    document.getElementById('res-edd-date').innerText = eddDate.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+    document.getElementById('res-ga').innerText = `${weeks} Weeks, ${days} Days`;
+    document.getElementById('res-trimester').innerText = trimester;
+    
+    // ANC Button Generation Logic (Merged)
+    document.getElementById('anc-btn-container').innerHTML = `<button onclick="applyANCProtocol(${weeks})" class="mt-3 w-full bg-pink-600 text-white py-1.5 rounded-lg text-xs font-bold hover:bg-pink-700 shadow-sm transition"><i class="fa-solid fa-notes-medical"></i> ANC প্রোটোকল অ্যাপ্লাই করুন</button>`;
+    
+    const resultBox = document.getElementById('edd-result');
+    resultBox.classList.remove('hidden');
+}
+
+// ২. EDD Calculator Reset Function
+function resetEDD() {
+    document.getElementById('calc-lmp').value = '';
+    document.getElementById('edd-result').classList.add('hidden');
+    document.getElementById('anc-btn-container').innerHTML = ''; // Clear ANC Button
+    showToast("✓ ক্যালকুলেটর ক্লিয়ার করা হয়েছে!");
+}
+
+
+// ২. IV Fluid Drip Rate Calculator
+function calculateIVDrip() {
+    if (typeof userTier !== 'undefined' && userTier !== 'PRO') {
+        showUpgradePrompt();
+        return;
+    }
+
+    const vol = parseFloat(document.getElementById('iv-vol').value);
+    const hrs = parseFloat(document.getElementById('iv-time').value);
+    const dropFactor = parseInt(document.getElementById('iv-drop-factor').value);
+    
+    if(!vol || !hrs) {
+        showToast("ফ্লুইড ভলিউম এবং সময় ইনপুট দিন!");
+        return;
+    }
+    
+    // Formula: (Volume in ml * Drop Factor) / Time in minutes
+    const timeInMins = hrs * 60;
+    const dropsPerMin = Math.round((vol * dropFactor) / timeInMins);
+    
+    const resBox = document.getElementById('iv-result');
+    resBox.innerHTML = `ফ্লো রেট: <span class="text-lg text-cyan-600">${dropsPerMin}</span> Drops / Min`;
+    resBox.classList.remove('hidden');
+}
+
+// ৩. Bengali Diet & Lifestyle Generator
+// ৩. Auto-Generated Bengali Diet & Lifestyle Charts (20 Diseases Data)
+function applyDietChart(condition) {
+    if (typeof userTier !== 'undefined' && userTier !== 'PRO') {
+        showUpgradePrompt();
+        return;
+    }
+
+    const dietData = {
+        'diabetes': { 
+            title: "ডায়াবেটিস রোগীদের জন্য নির্দেশিকা", 
+            items: ["মিষ্টি, চিনি, গুড় ও মিষ্টি জাতীয় খাবার সম্পূর্ণ পরিহার করুন।", "প্রতিদিন অন্তত ৩০-৪০ মিনিট জোরে হাঁটার অভ্যাস করুন।", "সাদা চালের ভাতের বদলে লাল চালের ভাত খাওয়ার চেষ্টা করুন।", "নিয়মিত পায়ের যত্ন নিন এবং খালি পায়ে হাঁটবেন না।"] 
+        },
+        'htn': { 
+            title: "উচ্চ রক্তচাপ (Hypertension) নির্দেশিকা", 
+            items: ["পাতে আলগা লবণ বা কাঁচা লবণ খাওয়া থেকে সম্পূর্ণ বিরত থাকুন।", "চর্বিযুক্ত খাবার, রেড মিট (গরু/খাসি) ও ফাস্টফুড এড়িয়ে চলুন।", "ওজন নিয়ন্ত্রণে রাখুন এবং প্রতিদিন শারীরিক পরিশ্রম করুন।", "দুশ্চিন্তা মুক্ত থাকার চেষ্টা করুন এবং দৈনিক ৬-৮ ঘণ্টা ঘুমান।"] 
+        },
+        'ckd': { 
+            title: "কিডনি রোগ (CKD) নির্দেশিকা", 
+            items: ["ডাক্তারের নির্দেশিত পরিমাপের চেয়ে বেশি পানি বা তরল খাবেন না।", "ডাল, বাদাম, কলা ও ডাবের পানি খাওয়া থেকে বিরত থাকুন।", "প্রোটিন (মাছ/মাংস) পরিমিত পরিমাণে খাবেন (পরামর্শ অনুযায়ী)।", "ব্যথার ওষুধ (NSAIDs) খাওয়া সম্পূর্ণ নিষেধ।"] 
+        },
+        'gerd': { 
+            title: "গ্যাস্ট্রিক ও পেপটিক আলসার নির্দেশিকা", 
+            items: ["ভাজা-পোড়া, অতিরিক্ত ঝাল ও তেল-মশলা যুক্ত খাবার এড়িয়ে চলুন।", "খালি পেটে চা, কফি বা কোল্ড ড্রিংকস খাবেন না।", "একবারে বেশি খাবার না খেয়ে, অল্প করে বারবার খাওয়ার অভ্যাস করুন।", "রাতের খাবার ঘুমানোর অন্তত ২ ঘণ্টা আগে সম্পন্ন করুন।"] 
+        },
+        'pregnancy': { 
+            title: "গর্ভাবস্থায় বিশেষ যত্ন ও নির্দেশিকা", 
+            items: ["ভারী কাজ করা এবং ভারী জিনিস তোলা থেকে বিরত থাকুন।", "প্রচুর পরিমাণে পানি পান করুন এবং পুষ্টিকর খাবার (শাকসবজি, দুধ, ডিম) খান।", "দিনে অন্তত ২ ঘণ্টা এবং রাতে ৮ ঘণ্টা বিশ্রাম নিন।", "তলপেটে ব্যথা, রক্তক্ষরণ বা পানি ভাঙলে দ্রুত হাসপাতালে যোগাযোগ করুন।"] 
+        },
+        'fatty_liver': {
+            title: "ফ্যাটি লিভার নির্দেশিকা",
+            items: ["মিষ্টি, ফাস্টফুড ও সফট ড্রিংকস সম্পূর্ণ বাদ দিন।", "প্রতিদিন অন্তত ৩০-৪০ মিনিট ব্যায়াম করুন বা হাঁটুন।", "খাবারে তেলের পরিমাণ একদম কমিয়ে দিন।", "ওজন কমানোর চেষ্টা করুন।"]
+        },
+        'uric_acid': {
+            title: "ইউরিক এসিড / গাউট (Gout) নির্দেশিকা",
+            items: ["লাল মাংস (গরু, খাসি), কলিজা ও মগজ খাওয়া বাদ দিন।", "ডাল, পালং শাক, পুঁই শাক ও মাশরুম কম খাবেন।", "প্রচুর পরিমাণে বিশুদ্ধ পানি পান করুন (দৈনিক ৩ লিটার)।", "সামুদ্রিক মাছ এড়িয়ে চলার চেষ্টা করুন।"]
+        },
+        'ibs': {
+            title: "আইবিএস (IBS) নির্দেশিকা",
+            items: ["দুধ ও দুধের তৈরি খাবার খেলে সমস্যা হলে তা বাদ দিন।", "অতিরিক্ত তেল-মশলা ও বাইরের খাবার পরিহার করুন।", "যেসব খাবারে আপনার সমস্যা বাড়ে তা চিহ্নিত করে এড়িয়ে চলুন।", "দুশ্চিন্তা ও মানসিক চাপ মুক্ত থাকার চেষ্টা করুন।"]
+        },
+        'anemia': {
+            title: "রক্তশূন্যতা (Anemia) নির্দেশিকা",
+            items: ["কচুশাক, লালশাক, কলিজা, ডালিম, কাঁচকলা বেশি করে খান।", "আয়রন জাতীয় খাবারের সাথে লেবুর রস (ভিটামিন সি) খান।", "খাবারের পরপরই চা বা কফি খাবেন না।", "নিয়মিত কৃমির ওষুধ খান (পরিবারের সবাই মিলে)।"]
+        },
+        'obesity': {
+            title: "ওজন কমানোর (Obesity) নির্দেশিকা",
+            items: ["চিনি, মিষ্টিজাতীয় খাবার এবং ফাস্টফুড সম্পূর্ণ বাদ দিন।", "ভাত বা শর্করা কমিয়ে প্লেটে সবজি ও প্রোটিন বেশি রাখুন।", "প্রতিদিন অন্তত ৪৫ মিনিট ব্যায়াম বা ঘাম ঝরিয়ে হাঁটুন।", "রাতের খাবার রাত ৮টার মধ্যে শেষ করার চেষ্টা করুন।"]
+        },
+        'asthma': {
+            title: "হাঁপানি বা শ্বাসকষ্ট (Asthma) নির্দেশিকা",
+            items: ["ধুলোবালি, ধোঁয়া ও অতিরিক্ত ঠান্ডা থেকে সাবধানে থাকুন।", "ফ্রিজের ঠান্ডা পানি বা আইসক্রিম একদম খাবেন না।", "অ্যালার্জি হয় এমন খাবার (যেমন: চিংড়ি, গরুর মাংস, বেগুন) এড়িয়ে চলুন।", "ইনহেলার ব্যবহারের সঠিক নিয়ম মেনে চলুন এবং সাথে রাখুন।"]
+        },
+        'uti': {
+            title: "ইউরিন ইনফেকশন (UTI) নির্দেশিকা",
+            items: ["প্রতিদিন কমপক্ষে ৩-৪ লিটার বিশুদ্ধ পানি পান করুন।", "প্রস্রাব আটকে রাখবেন না, বেগ আসলে সাথে সাথে বাথরুমে যান।", "ভিটামিন সি যুক্ত ফল (যেমন: লেবু, মাল্টা) বেশি করে খান।", "ব্যক্তিগত পরিচ্ছন্নতা বজায় রাখুন।"]
+        },
+        'constipation': {
+            title: "কোষ্ঠকাঠিন্য (Constipation) নির্দেশিকা",
+            items: ["প্রচুর পরিমাণে পানি পান করুন।", "আঁশজাতীয় খাবার (ইসবগুলের ভুষি, শাকসবজি, ফলমূল) বেশি করে খান।", "সাদা আটা ও চালের বদলে লাল আটার রুটি ও লাল চালের ভাত খান।", "নিয়মিত হাঁটাচলা ও শারীরিক পরিশ্রম করুন।"]
+        },
+        'diarrhea': {
+            title: "ডায়রিয়া ও ফুড পয়জনিং নির্দেশিকা",
+            items: ["ডাবের পানি, ওরস্যালাইন ও তরল খাবার বেশি করে খান।", "বাইরের খোলা খাবার ও ভাজা-পোড়া সম্পূর্ণ বন্ধ রাখুন।", "কাঁচকলা, পেঁপে, নরম ভাত ও চিড়া খাবেন।", "প্রতিবার পাতলা পায়খানার পর স্যালাইন পান করুন।"]
+        },
+        'piles': {
+            title: "পাইলস বা অর্শ (Hemorrhoids) নির্দেশিকা",
+            items: ["কোষ্ঠকাঠিন্য যেন না হয় সেদিকে বিশেষ খেয়াল রাখুন।", "প্রচুর পানি ও আঁশজাতীয় খাবার (শাকসবজি) খান।", "অতিরিক্ত ঝাল ও মশলাযুক্ত খাবার পরিহার করুন।", "পায়খানার সময় অতিরিক্ত চাপ দেবেন না।"]
+        },
+        'dengue': {
+            title: "ডেঙ্গু জ্বর নির্দেশিকা",
+            items: ["প্রচুর তরল খাবার (ডাবের পানি, পেঁপের জুস, স্যুপ, স্যালাইন) পান করুন।", "পূর্ণ বিশ্রাম নিন এবং দিনে বা রাতে মশারি টানিয়ে ঘুমান।", "কোনো অবস্থাতেই ব্যথার ওষুধ (Aspirin/Ibuprofen) খাবেন না।", "জ্বর কমার পর দুর্বলতা কাটাতে পুষ্টিকর খাবার খান।"]
+        },
+        'typhoid': {
+            title: "টাইফয়েড জ্বর নির্দেশিকা",
+            items: ["তরল ও নরম খাবার (যেমন: জাউ ভাত, সাবুদানা, স্যুপ) খাবেন।", "বাইরের কোনো খোলা খাবার বা পানি খাবেন না, পানি ফুটিয়ে খাবেন।", "সম্পূর্ণ বিশ্রাম নিন এবং কোর্স অনুযায়ী অ্যান্টিবায়োটিক শেষ করুন।", "খাবার আগে সাবান দিয়ে ভালোভাবে হাত ধুয়ে নিন।"]
+        },
+        'jaundice': {
+            title: "জন্ডিস (Hepatitis) নির্দেশিকা",
+            items: ["অতিরিক্ত তেল, মশলা ও চর্বিযুক্ত খাবার পরিহার করুন।", "গ্লুকোজ বা আখের রস বেশি করে খাওয়ার বৈজ্ঞানিক ভিত্তি নেই, সাধারণ পুষ্টিকর খাবার খান।", "পর্যাপ্ত বিশ্রাম নিন, ভারী কাজ থেকে বিরত থাকুন।", "ডাক্তারের পরামর্শ ছাড়া কোনো গ্যাস্ট্রিকের বা অন্য ওষুধ খাবেন না।"]
+        },
+        'osteoarthritis': {
+            title: "বাত বা হাড় ক্ষয় (Osteoarthritis) নির্দেশিকা",
+            items: ["ক্যালসিয়াম ও ভিটামিন ডি সমৃদ্ধ খাবার (দুধ, ছোট মাছ) বেশি করে খান।", "ওজন নিয়ন্ত্রণে রাখুন, কারণ ওজন বাড়লে হাঁটুতে চাপ পড়ে।", "একটানা অনেকক্ষণ দাঁড়িয়ে বা বাবু হয়ে বসে থাকবেন না।", "হাঁটু ভাঁজ করে বসা (যেমন: নিচু টয়লেট ব্যবহার) এড়িয়ে চলুন।"]
+        },
+        'cholesterol': {
+            title: "রক্তে উচ্চ কোলেস্টেরল নির্দেশিকা",
+            items: ["ডিমের কুসুম, চিংড়ি মাছ, খাসি বা গরুর চর্বিযুক্ত মাংস পরিহার করুন।", "সয়াবিন তেলের বদলে অল্প পরিমাণে সরিষার তেল ব্যবহার করতে পারেন।", "ফাস্টফুড, প্রসেসড ফুড ও বেকারি খাবার এড়িয়ে চলুন।", "ওজন কমান এবং প্রতিদিন অন্তত ৩০ মিনিট ঘাম ঝরিয়ে হাঁটুন।"]
+        }
+    };
+    
+    const data = dietData[condition];
+    if(!data) return;
+    
+    // Add to pad-medicine-list as a styled advice block
+    const list = document.getElementById('pad-medicine-list');
+    const item = document.createElement('li');
+    item.className = "mt-6 p-4 bg-emerald-50/50 border border-emerald-100 rounded-xl list-none relative group print:bg-transparent print:border-none print:p-2";
+    
+    let html = `
+        <h4 class="font-bold text-emerald-800 text-[15px] mb-2 flex items-center gap-2 border-b border-emerald-200 pb-1 print:text-black print:border-black">
+            <i class="fa-solid fa-circle-info print:hidden"></i> ${data.title}
+        </h4>
+        <ul class="list-disc pl-5 text-sm text-slate-800 space-y-1.5 font-medium">`;
+    
+    data.items.forEach(i => {
+        html += `<li><span contenteditable="true" class="outline-none focus:border-b focus:border-emerald-300" onblur="saveDraftPrescription()">${i}</span></li>`;
+    });
+    
+    html += `
+        </ul>
+        <button onclick="this.parentElement.remove(); saveDraftPrescription(); generateQR();" class="absolute top-2 right-2 text-red-500 bg-white hover:bg-red-50 p-2 rounded-lg text-xs shadow-sm opacity-0 group-hover:opacity-100 transition print:hidden">
+            <i class="fa-solid fa-trash"></i>
+        </button>`;
+    
+    item.innerHTML = html;
+    list.appendChild(item);
+    
+    saveDraftPrescription();
+    showToast(`✅ ${data.title.split(' ')[0]} চার্ট প্যাডে যুক্ত হয়েছে!`);
+}
+
+
+      // =========================================================
+// UNIFIED SAAS GATEWAY, FEATURE LOCKING & INVOICING LOGIC
+// =========================================================
+
+const SAAS_TOKENS = {
+    FREE: ["FREE2026", "BASICAPP"],
+    PRO: ["PRO50Y", "PRO100L", "KABBO05Y", "MEDRXPRO2026", "CLINICPRO"]
+};
+
+let userTier = 'LOCKED'; // 'LOCKED', 'FREE', 'PRO'
+
+// ১. App Initialization
+window.addEventListener('DOMContentLoaded', () => {
+    const savedTier = localStorage.getItem('rxpro_saas_tier');
+    const gatekeeper = document.getElementById('saas-gatekeeper');
+    
+    if (savedTier === 'PRO' || savedTier === 'FREE') {
+        userTier = savedTier;
+        if(gatekeeper) {
+            gatekeeper.style.opacity = '0';
+            setTimeout(() => gatekeeper.classList.add('hidden'), 500);
+        }
+        updateUIBasedOnTier();
+    } else {
+        if(gatekeeper) gatekeeper.classList.remove('hidden');
+    }
+});
+
+// ২. Token Sanitizer Helper (Fixes 'O' vs '0' confusion everywhere)
+function sanitizeToken(token) {
+    let sanitized = token.trim().toUpperCase();
+    return sanitized.replace(/O/g, '0');
+}
+
+function getNormalizedTokens(type) {
+    return SAAS_TOKENS[type].map(t => t.replace(/O/g, '0'));
+}
+
+// ৩. Full Screen Gatekeeper Unlock Logic
+function unlockApp() {
+    let rawInput = document.getElementById('gate-token-input').value;
+    let sanitizedInput = sanitizeToken(rawInput);
+    
+    if (getNormalizedTokens('PRO').includes(sanitizedInput)) {
+        activateProTier();
+        showToast("👑 Premium Unlocked Successfully!");
+    } else if (getNormalizedTokens('FREE').includes(sanitizedInput)) {
+        userTier = 'FREE';
+        localStorage.setItem('rxpro_saas_tier', 'FREE');
+        
+        const gatekeeper = document.getElementById('saas-gatekeeper');
+        gatekeeper.style.opacity = '0';
+        setTimeout(() => gatekeeper.classList.add('hidden'), 500);
+        
+        updateUIBasedOnTier();
+        showToast("✓ Basic App Unlocked.");
+    } else {
+        showToast("✗ Invalid Token. Please try again.");
+    }
+}
+
+// ৪. Settings Tab Token Verification (Upgrade to Pro from inside app)
+function verifySubscriptionToken() {
+    let rawInput = document.getElementById('sub-token-input').value;
+    const msgEl = document.getElementById('token-msg');
+
+    if (!rawInput) {
+        showToast("দয়া করে টোকেন ইনপুট দিন!");
+        return;
+    }
+
+    let sanitizedInput = sanitizeToken(rawInput);
+
+    if (getNormalizedTokens('PRO').includes(sanitizedInput)) {
+        activateProTier();
+        msgEl.innerText = "✓ Token Verified! Pro Features Unlocked.";
+        msgEl.className = "text-[11px] mt-2 font-bold text-emerald-600 block";
+        showToast("সাবস্ক্রিপশন সফলভাবে ভেরিফাই হয়েছে!");
+    } else {
+        msgEl.innerText = "✗ Invalid Token. Please check your key.";
+        msgEl.className = "text-[11px] mt-2 font-bold text-red-500 block";
+        showToast("ভুল টোকেন! আবার চেষ্টা করুন।");
+    }
+}
+
+// ৫. Activate PRO Settings & UI
+function activateProTier() {
+    userTier = 'PRO';
+    localStorage.setItem('rxpro_saas_tier', 'PRO');
+    
+    // Hide Gatekeeper if visible
+    const gatekeeper = document.getElementById('saas-gatekeeper');
+    if(gatekeeper && !gatekeeper.classList.contains('hidden')) {
+        gatekeeper.style.opacity = '0';
+        setTimeout(() => gatekeeper.classList.add('hidden'), 500);
+    }
+    
+    // Update Settings Tab Badge
+    const badge = document.getElementById('sub-status-badge');
+    if(badge) {
+        badge.innerText = "PRO ACTIVE";
+        badge.className = "bg-emerald-100 text-emerald-700 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider";
+    }
+    
+    // Show Invoice Section
+    const invoiceSection = document.getElementById('invoice-section');
+    if(invoiceSection) {
+        invoiceSection.classList.remove('hidden');
+        setTimeout(() => invoiceSection.classList.remove('opacity-0'), 50);
+    }
+
+    // Remove Visual Locks from Headers
+    document.querySelectorAll('.pro-lock-badge').forEach(el => el.remove());
+}
+
+// ৬. Handle UI Elements Based on Tier (FREE vs PRO)
+function updateUIBasedOnTier() {
+    if (userTier === 'FREE') {
+        // Add Lock Icons to Pro Features
+        const templateHeader = document.querySelector('h3 .fa-bolt')?.parentElement;
+        if (templateHeader && !templateHeader.querySelector('.pro-lock-badge')) {
+            templateHeader.innerHTML += ' <span class="pro-lock-badge bg-amber-100 text-amber-700 px-2 py-0.5 rounded text-[10px] ml-auto"><i class="fa-solid fa-lock"></i> PRO</span>';
+        }
+        const calcHeader = document.querySelector('h3 .fa-calculator')?.parentElement;
+        if (calcHeader && !calcHeader.querySelector('.pro-lock-badge')) {
+            calcHeader.innerHTML += ' <span class="pro-lock-badge bg-amber-100 text-amber-700 px-2 py-0.5 rounded text-[10px] ml-auto"><i class="fa-solid fa-lock"></i> PRO</span>';
+        }
+    } else if (userTier === 'PRO') {
+        activateProTier(); // Ensures settings tab is open if they reload as PRO
+    }
+}
+
+// ৭. Feature Interception (Overriding Original Functions)
+const originalCalculatePediatricDose = calculatePediatricDose;
+calculatePediatricDose = function() {
+    if (userTier !== 'PRO') { showUpgradePrompt(); return; }
+    originalCalculatePediatricDose();
+};
+
+const originalApplyTemplate = applyTemplate;
+applyTemplate = function(disease) {
+    if (userTier !== 'PRO') { showUpgradePrompt(); return; }
+    originalApplyTemplate(disease);
+};
+
+function showUpgradePrompt() {
+    const prompt = document.getElementById('upgrade-prompt');
+    if(prompt) {
+        prompt.classList.remove('hidden');
+        setTimeout(() => prompt.classList.remove('opacity-0'), 10);
+    }
+}
+
+// ৮. Invoicing Engine
+function generateInvoicePDF() {
+    const clinicName = document.getElementById('inv-clinic-name').value || "Valued Clinic";
+    const planSelect = document.getElementById('inv-plan-type');
+    const planDesc = planSelect.options[planSelect.selectedIndex].text;
+    const planAmount = planSelect.value;
+    const invId = "INV-" + Math.floor(Math.random() * 90000 + 10000);
+    const dateStr = new Date().toLocaleDateString('en-GB');
+
+    document.getElementById('print-inv-date').innerText = dateStr;
+    document.getElementById('print-inv-id').innerText = invId;
+    document.getElementById('print-inv-client').innerText = clinicName;
+    document.getElementById('print-inv-desc').innerText = `MedRxPro Subscription - ${planDesc.split(' - ')[0]}`;
+    document.getElementById('print-inv-amount').innerText = `৳${planAmount}`;
+    document.getElementById('print-inv-subtotal').innerText = `৳${planAmount}`;
+    document.getElementById('print-inv-total').innerText = `৳${planAmount}`;
+
+    const printArea = document.getElementById('invoice-print-area');
+    const container = document.getElementById('hidden-invoice-template');
+    container.classList.remove('hidden');
+    container.style.position = 'absolute';
+    container.style.left = '-9999px';
+
+    const opt = {
+        margin:       0,
+        filename:     `${invId}_MedRxPro.pdf`,
+        image:        { type: 'jpeg', quality: 0.98 },
+        html2canvas:  { scale: 2, useCORS: true },
+        jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' }
+    };
+
+    html2pdf().set(opt).from(printArea).save().then(() => {
+        container.classList.add('hidden');
+        container.style.position = 'static';
+        showToast("ইনভয়েস PDF ডাউনলোড শুরু হয়েছে!");
+    });
+}
+
+// Expanded Drug Database for better demonstration
         const medicineDB = [
             { name: "Napa 500mg (Tablet)", generic: "Paracetamol", company: "Beximco" },
             { name: "Napa Extend (Tablet)", generic: "Paracetamol", company: "Beximco" },
@@ -1846,6 +2762,8 @@ function printPrescription() {
                 options: { responsive: true, scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } } }
             });
         }
+        
+      
     </script>
 </body>
-</html>
+				</html>
