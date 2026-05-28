@@ -8,140 +8,138 @@
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#2563eb">
     <link rel="apple-touch-icon" href="icon-192.png">
-    <script src="https://cdn.tailwindcss.com"></script>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com">
+
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;600&display=swap" rel="stylesheet">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-  <style>
-    body {
-        background: linear-gradient(135deg, #f0f4f8 0%, #e2e8f0 100%);
-        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        padding-bottom: 70px;
-    }
-    .glass-card {
-        background: rgba(255, 255, 255, 0.85);
-        backdrop-filter: blur(10px);
-        border: 1px solid rgba(255, 255, 255, 0.5);
-        box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.05);
-    }
-    .theme-classic-blue { border-top: 8px solid #1e3a8a; }
-    .theme-teal-premium { border-top: 8px solid #0f766e; }
-    .theme-minimalist { border-top: 8px solid #334155; }
-    
-    .no-scrollbar::-webkit-scrollbar { display: none; }
-    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    <script src="https://cdn.tailwindcss.com"></script>
 
-    /* Voice typing animation */
-    .recording { animation: pulse-red 1.5s infinite; color: #ef4444; }
-    @keyframes pulse-red { 0% { transform: scale(1); } 50% { transform: scale(1.2); } 100% { transform: scale(1); } }
+    <script defer src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script defer src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-    /* Custom Toast */
-    .toast-enter { transform: translateY(100%); opacity: 0; }
-    .toast-leave { transform: translateY(0); opacity: 1; }
+    <style>
+        body {
+            background: linear-gradient(135deg, #f0f4f8 0%, #e2e8f0 100%);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            padding-bottom: 70px;
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.05);
+        }
+        .theme-classic-blue { border-top: 8px solid #1e3a8a; }
+        .theme-teal-premium { border-top: 8px solid #0f766e; }
+        .theme-minimalist { border-top: 8px solid #334155; }
+        
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
-    /* ==========================================
-       Prescription Pad Fonts & Fixes 
-       ========================================== */
+        /* Voice typing animation */
+        .recording { animation: pulse-red 1.5s infinite; color: #ef4444; }
+        @keyframes pulse-red { 0% { transform: scale(1); } 50% { transform: scale(1.2); } 100% { transform: scale(1); } }
 
-    /* Universal selector (*) বাদ দিয়ে শুধুমাত্র নির্দিষ্ট টেক্সট ট্যাগগুলোতে ফন্ট দেওয়া হলো */
-    #prescription-pad, 
-    #prescription-pad h1, 
-    #prescription-pad h2, 
-    #prescription-pad h3, 
-    #prescription-pad h4, 
-    #prescription-pad p, 
-    #prescription-pad span, 
-    #prescription-pad div, 
-    #prescription-pad ul, 
-    #prescription-pad ol, 
-    #prescription-pad li, 
-    #prescription-pad strong,
-    #prescription-pad button {
-        font-family: 'Hind Siliguri', sans-serif !important;
-        text-rendering: optimizeLegibility !important;
-        -webkit-font-smoothing: antialiased !important;
-    }
+        /* Custom Toast */
+        .toast-enter { transform: translateY(100%); opacity: 0; }
+        .toast-leave { transform: translateY(0); opacity: 1; }
 
-    /* FontAwesome আইকনগুলোর ::before pseudo-element কে ফোর্স করে অরিজিনাল ফন্ট দেওয়া হলো */
-    #prescription-pad i, 
-    #prescription-pad i::before, 
-    #prescription-pad i::after {
-        font-family: "Font Awesome 6 Free" !important;
-        font-weight: 900 !important;
-    }
-    
-    #prescription-pad i.fa-brands,
-    #prescription-pad i.fa-brands::before {
-        font-family: "Font Awesome 6 Brands" !important;
-        font-weight: 400 !important;
-    }
+        /* ==========================================
+           Prescription Pad Fonts & Fixes 
+           ========================================== */
 
-   /* ==========================================
-       Print Media (Native Browser Print Setup)
-       ========================================== */
-    @media print {
-        /* ১. অপ্রয়োজনীয় সব কিছু হাইড */
-        header, 
-        #edit-section, 
-        #dashboard-section, 
-        .lg\:hidden, 
-        #toast-container,
-        #preview-section > div:first-child { 
-            display: none !important; 
+        #prescription-pad, 
+        #prescription-pad h1, 
+        #prescription-pad h2, 
+        #prescription-pad h3, 
+        #prescription-pad h4, 
+        #prescription-pad p, 
+        #prescription-pad span, 
+        #prescription-pad div, 
+        #prescription-pad ul, 
+        #prescription-pad ol, 
+        #prescription-pad li, 
+        #prescription-pad strong,
+        #prescription-pad button {
+            font-family: 'Hind Siliguri', sans-serif !important;
+            text-rendering: optimizeLegibility !important;
+            -webkit-font-smoothing: antialiased !important;
         }
 
-        /* ২. গ্রিড এবং ম্যাক্স-উইডথ রিসেট করা (এটিই সংকুচিত হওয়ার মূল কারণ ছিল) */
-        html, body {
-            background: white !important;
-            width: 100% !important;
-            margin: 0 !important;
-            padding: 0 !important;
+        #prescription-pad i, 
+        #prescription-pad i::before, 
+        #prescription-pad i::after {
+            font-family: "Font Awesome 6 Free" !important;
+            font-weight: 900 !important;
+        }
+        
+        #prescription-pad i.fa-brands,
+        #prescription-pad i.fa-brands::before {
+            font-family: "Font Awesome 6 Brands" !important;
+            font-weight: 400 !important;
         }
 
-        main {
-            display: block !important; /* গ্রিড লেআউট বাতিল */
-            max-width: none !important; /* Tailwind এর max-w-6xl বাতিল */
-            width: 100% !important;
-            margin: 0 !important;
-            padding: 0 !important;
-        }
+        /* ==========================================
+           Print Media (Native Browser Print Setup)
+           ========================================== */
+        @media print {
+            header, 
+            #edit-section, 
+            #dashboard-section, 
+            .lg\:hidden, 
+            #toast-container,
+            #preview-section > div:first-child { 
+                display: none !important; 
+            }
 
-        #preview-section {
-            display: block !important;
-            width: 100% !important;
-            margin: 0 !important;
-            padding: 0 !important;
-        }
+            html, body {
+                background: white !important;
+                width: 100% !important;
+                margin: 0 !important;
+                padding: 0 !important;
+            }
 
-        /* ৩. প্রেসক্রিপশন প্যাডকে পুরো A4 পেজ জুড়ে সেট করা */
-        #prescription-pad {
-            width: 100% !important;
-            max-width: 100% !important;
-            min-height: 297mm !important;
-            box-shadow: none !important;
-            border: none !important;
-            margin: 0 !important;
-            padding: 15mm 10mm !important; /* প্রিন্টে সুন্দর দেখানোর জন্য প্যাডিং */
-        }
+            main {
+                display: block !important; 
+                max-width: none !important; 
+                width: 100% !important;
+                margin: 0 !important;
+                padding: 0 !important;
+            }
 
-        /* ৪. কালার এবং ব্যাকগ্রাউন্ড ঠিক রাখা */
-        * {
-            -webkit-print-color-adjust: exact !important;
-            print-color-adjust: exact !important;
-        }
+            #preview-section {
+                display: block !important;
+                width: 100% !important;
+                margin: 0 !important;
+                padding: 0 !important;
+            }
 
-        /* ৫. পেজ সেটআপ (যাতে ডিফল্ট হেডার/ফুটার না আসে) */
-        @page {
-            size: A4 portrait;
-            margin: 0mm; 
-        }
-    }
-	
-</style>
+            #prescription-pad {
+                width: 100% !important;
+                max-width: 100% !important;
+                min-height: 297mm !important;
+                box-shadow: none !important;
+                border: none !important;
+                margin: 0 !important;
+                padding: 15mm 10mm !important; 
+            }
 
+            * {
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+
+            @page {
+                size: A4 portrait;
+                margin: 0mm; 
+            }
+        }
+    </style>
 </head>
 
 <body class="text-slate-800">
